@@ -89,6 +89,7 @@ export default function PlaceDetail() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [sabor, setSabor] = useState(3);
   const [crocancia, setCrocancia] = useState(3);
@@ -158,6 +159,31 @@ export default function PlaceDetail() {
     }
   }
 
+  async function deleteRating() {
+    const doDelete = async () => {
+      setDeleting(true);
+      try {
+        await api.delete(`/api/places/${id}/ratings`);
+        setMyRating(null);
+        setSabor(3); setCrocancia(3); setRecheio(3); setQualidade_preco(3);
+        setComment(""); setPhoto(null);
+        await load();
+      } catch (e: any) {
+        Alert.alert("Erro", e.message);
+      } finally {
+        setDeleting(false);
+      }
+    };
+    if (Platform.OS === "web") {
+      if ((window as any).confirm("Eliminar a tua avaliação?")) doDelete();
+    } else {
+      Alert.alert("Eliminar avaliação", "Tens a certeza?", [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Eliminar", style: "destructive", onPress: doDelete },
+      ]);
+    }
+  }
+
   async function saveRating() {
     setSaving(true);
     try {
@@ -213,12 +239,17 @@ export default function PlaceDetail() {
               style={s.mapsBtn}
               onPress={() => {
                 const label = encodeURIComponent(place.name);
-                const url = Platform.OS === "ios"
-                  ? `maps:0,0?q=${label}@${place.latitude},${place.longitude}`
-                  : Platform.OS === "web"
-                  ? `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`
-                  : `geo:${place.latitude},${place.longitude}?q=${place.latitude},${place.longitude}(${label})`;
-                Linking.openURL(url);
+                if (Platform.OS === "web") {
+                  (window as any).open(
+                    `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`,
+                    "_blank"
+                  );
+                } else {
+                  const url = Platform.OS === "ios"
+                    ? `maps:0,0?q=${label}@${place.latitude},${place.longitude}`
+                    : `geo:${place.latitude},${place.longitude}?q=${place.latitude},${place.longitude}(${label})`;
+                  Linking.openURL(url);
+                }
               }}
             >
               <Ionicons name="navigate-outline" size={14} color={colors.primary} />
@@ -332,6 +363,20 @@ export default function PlaceDetail() {
               </Text>
             )}
           </Pressable>
+
+          {myRating?.sabor && (
+            <Pressable
+              style={[s.deleteBtn, deleting && s.saveBtnDisabled]}
+              onPress={deleteRating}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <ActivityIndicator color={colors.error} size="small" />
+              ) : (
+                <Text style={s.deleteBtnText}>Eliminar avaliação</Text>
+              )}
+            </Pressable>
+          )}
         </View>
 
         {/* Other ratings */}
@@ -508,6 +553,19 @@ const s = StyleSheet.create({
     ...shadows.strong,
   },
   saveBtnDisabled: { opacity: 0.6 },
+  deleteBtn: {
+    borderWidth: 1.5,
+    borderColor: colors.error,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    alignItems: "center",
+    marginTop: spacing.sm,
+  },
+  deleteBtnText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 15,
+    color: colors.error,
+  },
   saveBtnText: {
     fontFamily: fonts.display,
     fontSize: 17,

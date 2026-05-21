@@ -130,18 +130,18 @@ export default function HomeScreen() {
                 </Pressable>
               </View>
 
-              {user?.id === activeEvent.owner_id && (
-                <Pressable
-                  style={s.membersBtn}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(`/event/${activeEvent.id}/members`);
-                  }}
-                >
-                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-                  <Text style={s.membersBtnText}>Gerir participantes</Text>
-                </Pressable>
-              )}
+              <Pressable
+                style={s.membersBtn}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push(`/event/${activeEvent.id}/members` as any);
+                }}
+              >
+                <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
+                <Text style={s.membersBtnText}>
+                  {user?.id === activeEvent.owner_id ? "Gerir participantes" : "Ver participantes"}
+                </Text>
+              </Pressable>
             </View>
           ) : (
             <View style={s.emptyCard}>
