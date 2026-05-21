@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -54,6 +55,7 @@ function Stars({ value }: { value: number }) {
 
 export default function RankingScreen() {
   const { activeEvent } = useAuth();
+  const router = useRouter();
   const [entries, setEntries] = useState<RankingEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,7 +128,10 @@ export default function RankingScreen() {
           const score = item[metric];
           const hasRatings = item.ratings_count > 0;
           return (
-            <View style={[s.card, index === 0 && hasRatings && s.cardFirst]}>
+            <Pressable
+              style={[s.card, index === 0 && hasRatings && s.cardFirst]}
+              onPress={() => router.push(`/place/${item.place_id}` as any)}
+            >
               <View style={s.cardHeader}>
                 <Text style={s.medal}>
                   {index < 3 && hasRatings ? MEDALS[index] : `${index + 1}.`}
@@ -168,7 +173,7 @@ export default function RankingScreen() {
                   </Text>
                 </View>
               )}
-            </View>
+            </Pressable>
           );
         }}
       />
