@@ -215,6 +215,8 @@ export default function PlaceDetail() {
                 const label = encodeURIComponent(place.name);
                 const url = Platform.OS === "ios"
                   ? `maps:0,0?q=${label}@${place.latitude},${place.longitude}`
+                  : Platform.OS === "web"
+                  ? `https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`
                   : `geo:${place.latitude},${place.longitude}?q=${place.latitude},${place.longitude}(${label})`;
                 Linking.openURL(url);
               }}

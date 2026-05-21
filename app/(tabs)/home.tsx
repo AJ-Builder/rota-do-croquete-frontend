@@ -129,6 +129,19 @@ export default function HomeScreen() {
                   <Text style={[s.quickBtnText, s.quickBtnTextOutline]}>Ranking</Text>
                 </Pressable>
               </View>
+
+              {user?.id === activeEvent.owner_id && (
+                <Pressable
+                  style={s.membersBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/event/${activeEvent.id}/members`);
+                  }}
+                >
+                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
+                  <Text style={s.membersBtnText}>Gerir participantes</Text>
+                </Pressable>
+              )}
             </View>
           ) : (
             <View style={s.emptyCard}>
@@ -342,6 +355,19 @@ const s = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
     fontSize: 12,
     color: colors.primary,
+  },
+  membersBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  membersBtnText: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 13,
+    color: colors.textSecondary,
   },
   newRouteBtn: {
     flexDirection: "row",
