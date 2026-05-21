@@ -31,11 +31,12 @@ function NavigationGate() {
       segments[0] === "place" ||
       segments[0] === "event";
     const inOnboarding = segments[0] === "onboarding";
+    const inJoin = segments[0] === "join";
 
     if (!user) {
-      if (!inAuthGroup) router.replace("/(auth)/login");
+      if (!inAuthGroup && !inJoin) router.replace("/(auth)/login");
     } else {
-      if (!inTabs && !inAppScreen && !inOnboarding) router.replace("/(tabs)/home");
+      if (!inTabs && !inAppScreen && !inOnboarding && !inJoin) router.replace("/(tabs)/home");
     }
   }, [user, loading, segments]);
 

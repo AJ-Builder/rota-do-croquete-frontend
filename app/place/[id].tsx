@@ -125,7 +125,25 @@ export default function PlaceDetail() {
     load().finally(() => setLoading(false));
   }, [load]);
 
+  function handleWebPhoto(useCamera: boolean) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    if (useCamera) (input as any).capture = "environment";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) setPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
   async function pickPhoto() {
+    if (Platform.OS === "web") { handleWebPhoto(false); return; }
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permissão necessária", "Preciso de acesso às fotos.");
@@ -144,6 +162,7 @@ export default function PlaceDetail() {
   }
 
   async function takePhoto() {
+    if (Platform.OS === "web") { handleWebPhoto(true); return; }
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== "granted") {
       Alert.alert("Permissão necessária", "Preciso de acesso à câmara.");

@@ -62,10 +62,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function _processPendingInvite() {
+    const code = await AsyncStorage.getItem("croquete_pending_join");
+    if (!code) return;
+    await AsyncStorage.removeItem("croquete_pending_join");
+    try {
+      const event = await api.post<Event>("/api/events/join", { code });
+      await AsyncStorage.setItem("croquete_active_event", event.id);
+      setActiveEventState(event);
+    } catch {}
+  }
+
   async function login(username: string, password: string) {
     const data = await api.login(username, password);
     await AsyncStorage.setItem("croquete_token", data.access_token);
     setUser(data.user);
+    await _processPendingInvite();
   }
 
   async function register(username: string, password: string) {
@@ -75,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
     await AsyncStorage.setItem("croquete_token", data.access_token);
     setUser(data.user);
+    await _processPendingInvite();
   }
 
   async function logout() {
