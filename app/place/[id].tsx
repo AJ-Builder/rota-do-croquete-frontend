@@ -90,6 +90,7 @@ export default function PlaceDetail() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const [sabor, setSabor] = useState(3);
   const [crocancia, setCrocancia] = useState(3);
@@ -159,28 +160,19 @@ export default function PlaceDetail() {
     }
   }
 
-  async function deleteRating() {
-    const doDelete = async () => {
-      setDeleting(true);
-      try {
-        await api.delete(`/api/places/${id}/ratings`);
-        setMyRating(null);
-        setSabor(3); setCrocancia(3); setRecheio(3); setQualidade_preco(3);
-        setComment(""); setPhoto(null);
-        await load();
-      } catch (e: any) {
-        Alert.alert("Erro", e.message);
-      } finally {
-        setDeleting(false);
-      }
-    };
-    if (Platform.OS === "web") {
-      if ((window as any).confirm("Eliminar a tua avaliação?")) doDelete();
-    } else {
-      Alert.alert("Eliminar avaliação", "Tens a certeza?", [
-        { text: "Cancelar", style: "cancel" },
-        { text: "Eliminar", style: "destructive", onPress: doDelete },
-      ]);
+  async function doDeleteRating() {
+    setConfirmDelete(false);
+    setDeleting(true);
+    try {
+      await api.delete(`/api/places/${id}/ratings`);
+      setMyRating(null);
+      setSabor(3); setCrocancia(3); setRecheio(3); setQualidade_preco(3);
+      setComment(""); setPhoto(null);
+      await load();
+    } catch (e: any) {
+      Alert.alert("Erro", e.message);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -367,7 +359,7 @@ export default function PlaceDetail() {
           {myRating?.sabor && (
             <Pressable
               style={[s.deleteBtn, deleting && s.saveBtnDisabled]}
-              onPress={deleteRating}
+              onPress={() => setConfirmDelete(true)}
               disabled={deleting}
             >
               {deleting ? (
@@ -416,6 +408,23 @@ export default function PlaceDetail() {
           </View>
         )}
       </ScrollView>
+
+      {confirmDelete && (
+        <View style={s.modalOverlay}>
+          <View style={s.modalBox}>
+            <Text style={s.modalTitle}>Eliminar avaliação</Text>
+            <Text style={s.modalBody}>Tens a certeza que queres eliminar a tua avaliação?</Text>
+            <View style={s.modalActions}>
+              <Pressable style={s.modalCancel} onPress={() => setConfirmDelete(false)}>
+                <Text style={s.modalCancelText}>Cancelar</Text>
+              </Pressable>
+              <Pressable style={s.modalConfirm} onPress={doDeleteRating}>
+                <Text style={s.modalConfirmText}>Eliminar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -666,5 +675,46 @@ const s = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: radius.pill,
+  },
+  modalOverlay: {
+    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center", justifyContent: "center",
+    zIndex: 999,
+  },
+  modalBox: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    padding: spacing.xl,
+    margin: spacing.xl,
+    ...shadows.strong,
+  },
+  modalTitle: {
+    fontFamily: fonts.display,
+    fontSize: 18,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  modalBody: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: spacing.xl,
+    lineHeight: 20,
+  },
+  modalActions: { flexDirection: "row", gap: spacing.md },
+  modalCancel: {
+    flex: 1, borderWidth: 1.5, borderColor: colors.border,
+    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+  },
+  modalCancelText: {
+    fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textSecondary,
+  },
+  modalConfirm: {
+    flex: 1, backgroundColor: colors.error,
+    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+  },
+  modalConfirmText: {
+    fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.white,
   },
 });

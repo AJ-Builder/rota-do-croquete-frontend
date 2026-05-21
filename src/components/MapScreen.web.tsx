@@ -104,13 +104,8 @@ export default function MapScreenWeb() {
 
         const marker = Lx.marker([place.latitude, place.longitude], { icon });
         marker.addTo(map);
-        marker.bindPopup(`
-          <b style="font-size:14px">${place.name}</b><br/>
-          <span style="color:#888;font-size:12px">${place.address || ""}</span><br/>
-          <a href="/place/${place.id}" style="color:${colors.primary};font-size:13px;font-weight:600">
-            Ver detalhes →
-          </a>
-        `);
+        marker.bindTooltip(`<b>${place.name}</b>`, { direction: "top", offset: [0, -20] });
+        marker.on("click", () => router.push(`/place/${place.id}` as any));
       });
 
       // Fit bounds if multiple places

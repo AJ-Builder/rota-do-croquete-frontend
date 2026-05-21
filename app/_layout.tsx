@@ -26,7 +26,10 @@ function NavigationGate() {
 
     const inAuthGroup = segments[0] === "(auth)";
     const inTabs = segments[0] === "(tabs)";
-    const inAppScreen = segments[0] === "add-place" || segments[0] === "place";
+    const inAppScreen =
+      segments[0] === "add-place" ||
+      segments[0] === "place" ||
+      segments[0] === "event";
     const inOnboarding = segments[0] === "onboarding";
 
     if (!user) {
