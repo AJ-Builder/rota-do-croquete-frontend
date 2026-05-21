@@ -6,6 +6,7 @@ import {
   Alert,
   Clipboard,
   FlatList,
+  Image,
   Platform,
   Pressable,
   RefreshControl,
@@ -24,6 +25,7 @@ interface Event {
   owner_id: string;
   participants: string[];
   created_at: string;
+  cover_photo_base64?: string;
 }
 
 interface ActivityItem {
@@ -65,11 +67,12 @@ function timeAgo(isoDate: string): string {
 }
 
 export default function HomeScreen() {
-  const { user, activeEvent, setActiveEvent } = useAuth();
+  const { user, activeEvent, setActiveEvent, refreshEvent } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
   const loadEvents = useCallback(async () => {
     try {
@@ -107,6 +110,33 @@ export default function HomeScreen() {
     await setActiveEvent(event);
   }
 
+  function uploadCover() {
+    if (Platform.OS !== "web") return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file || !activeEvent) return;
+      setUploadingCover(true);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          await api.put(`/api/events/${activeEvent.id}/cover`, {
+            cover_photo_base64: reader.result as string,
+          });
+          await refreshEvent();
+        } catch (e: any) {
+          Alert.alert("Erro", e.message);
+        } finally {
+          setUploadingCover(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
   function copyInvite(code: string) {
     const url = getInviteUrl(code);
     Clipboard.setString(url);
@@ -134,6 +164,24 @@ export default function HomeScreen() {
           {/* Active route card */}
           {activeEvent ? (
             <View style={s.activeCard}>
+              {/* Cover photo */}
+              {activeEvent.cover_photo_base64 ? (
+                <View style={s.coverContainer}>
+                  <Image source={{ uri: activeEvent.cover_photo_base64 }} style={s.coverPhoto} />
+                  {user?.id === activeEvent.owner_id && (
+                    <Pressable style={s.coverEditBtn} onPress={uploadCover} disabled={uploadingCover}>
+                      <Ionicons name="camera" size={16} color={colors.white} />
+                    </Pressable>
+                  )}
+                </View>
+              ) : user?.id === activeEvent.owner_id ? (
+                <Pressable style={s.coverPlaceholder} onPress={uploadCover} disabled={uploadingCover}>
+                  <Ionicons name="camera-outline" size={22} color={colors.textMuted} />
+                  <Text style={s.coverPlaceholderText}>Adicionar foto de grupo</Text>
+                </Pressable>
+              ) : null}
+
+              <View style={s.activeCardContent}>
               <View style={s.activeHeader}>
                 <View style={s.activeDot} />
                 <Text style={s.activeLabel}>ROTA ACTIVA</Text>
@@ -187,18 +235,30 @@ export default function HomeScreen() {
                 </Pressable>
               </View>
 
-              <Pressable
-                style={s.membersBtn}
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push(`/event/${activeEvent.id}/members` as any);
-                }}
-              >
-                <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-                <Text style={s.membersBtnText}>
-                  {user?.id === activeEvent.owner_id ? "Gerir participantes" : "Ver participantes"}
-                </Text>
-              </Pressable>
+              <View style={s.bottomBtns}>
+                <Pressable
+                  style={s.membersBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/event/${activeEvent.id}/members` as any);
+                  }}
+                >
+                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
+                  <Text style={s.membersBtnText}>
+                    {user?.id === activeEvent.owner_id ? "Gerir" : "Participantes"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={s.resultsBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/event/${activeEvent.id}/results` as any);
+                  }}
+                >
+                  <Ionicons name="trophy-outline" size={16} color={colors.primary} />
+                  <Text style={s.resultsBtnText}>Resultados</Text>
+                </Pressable>
+              </View>
 
               {activity.length > 0 && (
                 <View style={s.activitySection}>
@@ -214,6 +274,7 @@ export default function HomeScreen() {
                   ))}
                 </View>
               )}
+              </View>{/* end activeCardContent */}
             </View>
           ) : (
             <View style={s.emptyCard}>
@@ -265,11 +326,43 @@ const s = StyleSheet.create({
   activeCard: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
-    padding: spacing.xl,
+    overflow: "hidden",
     borderWidth: 2,
     borderColor: colors.secondary,
     ...shadows.card,
   },
+  coverContainer: { position: "relative" },
+  coverPhoto: { width: "100%", height: 160, resizeMode: "cover" },
+  coverEditBtn: {
+    position: "absolute", bottom: 8, right: 8,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 20, padding: 8,
+  },
+  coverPlaceholder: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: spacing.sm, paddingVertical: spacing.md,
+    backgroundColor: colors.surfaceAlt,
+    borderBottomWidth: 1, borderBottomColor: colors.border,
+  },
+  coverPlaceholderText: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted },
+  activeCardContent: { padding: spacing.xl },
+  bottomBtns: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  resultsBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderRadius: radius.md,
+  },
+  resultsBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.primary },
   activeHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: spacing.sm },
   activeDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.success },
   activeLabel: {
@@ -319,12 +412,15 @@ const s = StyleSheet.create({
   quickBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.white },
   quickBtnTextOutline: { color: colors.primary },
   membersBtn: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: spacing.sm,
-    marginTop: spacing.md,
     paddingVertical: spacing.sm,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: radius.md,
   },
   membersBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textSecondary },
   activitySection: {

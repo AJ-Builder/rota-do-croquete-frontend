@@ -15,6 +15,7 @@ interface Event {
   owner_id: string;
   participants: string[];
   created_at: string;
+  cover_photo_base64?: string;
 }
 
 interface AuthContextType {
