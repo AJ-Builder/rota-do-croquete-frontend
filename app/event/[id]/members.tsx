@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../../src/ctx/AuthContext";
 import { api } from "../../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../../src/theme";
 
 interface Participant {
   id: string;
@@ -23,6 +23,7 @@ interface Participant {
 }
 
 export default function MembersScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const router = useRouter();
@@ -74,6 +75,71 @@ export default function MembersScreen() {
     }
   }
 
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: spacing.lg,
+      paddingTop: 56,
+      paddingBottom: spacing.lg,
+      backgroundColor: colors.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      gap: spacing.md,
+    },
+    back: {},
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.text,
+    },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    list: { padding: spacing.lg, gap: spacing.sm },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      gap: spacing.md,
+      ...shadows.card,
+    },
+    avatar: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.secondary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarText: {
+      fontFamily: fonts.display,
+      fontSize: 18,
+      color: colors.white,
+    },
+    info: { flex: 1 },
+    name: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      color: colors.text,
+    },
+    ownerBadge: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.primary,
+      marginTop: 2,
+    },
+    removeBtn: {
+      padding: spacing.sm,
+      borderRadius: radius.sm,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    removeBtnDisabled: { opacity: 0.5 },
+  }), [colors]);
+
   return (
     <View style={s.flex}>
       <View style={s.header}>
@@ -120,68 +186,3 @@ export default function MembersScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingTop: 56,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.card,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.md,
-  },
-  back: {},
-  title: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.text,
-  },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  list: { padding: spacing.lg, gap: spacing.sm },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    gap: spacing.md,
-    ...shadows.card,
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.white,
-  },
-  info: { flex: 1 },
-  name: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    color: colors.text,
-  },
-  ownerBadge: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.primary,
-    marginTop: 2,
-  },
-  removeBtn: {
-    padding: spacing.sm,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  removeBtnDisabled: { opacity: 0.5 },
-});

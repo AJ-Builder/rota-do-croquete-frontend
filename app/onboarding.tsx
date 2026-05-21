@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -14,9 +14,10 @@ import {
 } from "react-native";
 import { useAuth } from "../src/ctx/AuthContext";
 import { api } from "../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../src/theme";
 
 export default function Onboarding() {
+  const colors = useColors();
   const { user, setActiveEvent, logout } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"create" | "join">("create");
@@ -64,6 +65,105 @@ export default function Onboarding() {
       setLoading(false);
     }
   }
+
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    container: { flexGrow: 1, padding: spacing.xl, justifyContent: "center" },
+    hero: { alignItems: "center", marginBottom: spacing.xxl },
+    emoji: { fontSize: 56, marginBottom: spacing.md },
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 28,
+      color: colors.primary,
+      textAlign: "center",
+    },
+    subtitle: {
+      fontFamily: fonts.body,
+      fontSize: 15,
+      color: colors.textSecondary,
+      marginTop: spacing.sm,
+      textAlign: "center",
+    },
+    tabs: {
+      flexDirection: "row",
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.md,
+      padding: 4,
+      marginBottom: spacing.lg,
+    },
+    tabBtn: {
+      flex: 1,
+      paddingVertical: spacing.sm,
+      alignItems: "center",
+      borderRadius: radius.sm,
+    },
+    tabBtnActive: { backgroundColor: colors.card, ...shadows.card },
+    tabText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.textMuted,
+    },
+    tabTextActive: { color: colors.primary },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      padding: spacing.xl,
+      ...shadows.card,
+    },
+    label: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    input: {
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      padding: spacing.md,
+      fontSize: 16,
+      fontFamily: fonts.body,
+      color: colors.text,
+      backgroundColor: colors.surface,
+    },
+    codeInput: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      letterSpacing: 2,
+      textAlign: "center",
+    },
+    hint: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    error: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.error,
+      marginTop: spacing.sm,
+      textAlign: "center",
+    },
+    btn: {
+      backgroundColor: colors.primary,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      alignItems: "center",
+      marginTop: spacing.xl,
+      ...shadows.strong,
+    },
+    btnDisabled: { opacity: 0.6 },
+    btnText: { fontFamily: fonts.display, fontSize: 17, color: colors.white },
+    logoutBtn: { alignItems: "center", marginTop: spacing.xxl },
+    logoutText: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textMuted,
+      textDecorationLine: "underline",
+    },
+  }), [colors]);
 
   return (
     <KeyboardAvoidingView
@@ -160,102 +260,3 @@ export default function Onboarding() {
     </KeyboardAvoidingView>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  container: { flexGrow: 1, padding: spacing.xl, justifyContent: "center" },
-  hero: { alignItems: "center", marginBottom: spacing.xxl },
-  emoji: { fontSize: 56, marginBottom: spacing.md },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: 28,
-    color: colors.primary,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontFamily: fonts.body,
-    fontSize: 15,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  tabs: {
-    flexDirection: "row",
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
-    padding: 4,
-    marginBottom: spacing.lg,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
-    borderRadius: radius.sm,
-  },
-  tabBtnActive: { backgroundColor: colors.card, ...shadows.card },
-  tabText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.textMuted,
-  },
-  tabTextActive: { color: colors.primary },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    ...shadows.card,
-  },
-  label: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  input: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    padding: spacing.md,
-    fontSize: 16,
-    fontFamily: fonts.body,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-  codeInput: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    letterSpacing: 2,
-    textAlign: "center",
-  },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  error: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.error,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  btn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    alignItems: "center",
-    marginTop: spacing.xl,
-    ...shadows.strong,
-  },
-  btnDisabled: { opacity: 0.6 },
-  btnText: { fontFamily: fonts.display, fontSize: 17, color: colors.white },
-  logoutBtn: { alignItems: "center", marginTop: spacing.xxl },
-  logoutText: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.textMuted,
-    textDecorationLine: "underline",
-  },
-});

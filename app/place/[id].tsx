@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -19,7 +19,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Place {
   id: string;
@@ -53,9 +53,11 @@ const PARAMS: { key: "sabor" | "crocancia" | "recheio" | "qualidade_preco"; labe
 function StarRow({
   value,
   onChange,
+  colors,
 }: {
   value: number;
   onChange: (v: number) => void;
+  colors: ReturnType<typeof useColors>;
 }) {
   return (
     <View style={{ flexDirection: "row", gap: 8 }}>
@@ -79,6 +81,7 @@ function StarRow({
 }
 
 export default function PlaceDetail() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { activeEvent } = useAuth();
   const router = useRouter();
@@ -220,6 +223,320 @@ export default function PlaceDetail() {
     }
   }
 
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    container: { paddingBottom: 60 },
+    header: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      paddingHorizontal: spacing.lg,
+      paddingTop: 56,
+      paddingBottom: spacing.lg,
+      backgroundColor: colors.card,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      gap: spacing.md,
+    },
+    back: { paddingTop: 4 },
+    headerInfo: { flex: 1 },
+    placeName: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.text,
+    },
+    placeAddress: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    statsCard: {
+      margin: spacing.lg,
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      ...shadows.card,
+    },
+    statsTitle: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.textMuted,
+      marginBottom: spacing.md,
+      textAlign: "center",
+    },
+    statsRow: { flexDirection: "row", justifyContent: "space-around" },
+    statItem: { alignItems: "center" },
+    statEmoji: { fontSize: 20, marginBottom: 4 },
+    statVal: {
+      fontFamily: fonts.display,
+      fontSize: 22,
+      color: colors.primary,
+    },
+    statLabel: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textMuted,
+    },
+    card: {
+      margin: spacing.lg,
+      marginTop: 0,
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      padding: spacing.xl,
+      ...shadows.card,
+    },
+    cardTitle: {
+      fontFamily: fonts.display,
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: spacing.lg,
+    },
+    paramRow: { marginBottom: spacing.lg },
+    paramLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.text,
+      marginBottom: spacing.sm,
+    },
+    commentInput: {
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: radius.sm,
+      padding: spacing.md,
+      fontSize: 14,
+      fontFamily: fonts.body,
+      color: colors.text,
+      backgroundColor: colors.surface,
+      minHeight: 80,
+      textAlignVertical: "top",
+      marginBottom: spacing.lg,
+    },
+    photoRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
+    photoBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.sm,
+      padding: spacing.md,
+      borderRadius: radius.sm,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    photoBtnText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.primary,
+    },
+    photoPreview: {
+      position: "relative",
+      marginBottom: spacing.md,
+    },
+    photoImg: {
+      width: "100%",
+      height: 180,
+      borderRadius: radius.md,
+      resizeMode: "cover",
+    },
+    photoRemove: {
+      position: "absolute",
+      top: 8,
+      right: 8,
+      backgroundColor: colors.white,
+      borderRadius: 12,
+    },
+    saveBtn: {
+      backgroundColor: colors.primary,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      alignItems: "center",
+      marginTop: spacing.sm,
+      ...shadows.strong,
+    },
+    saveBtnDisabled: { opacity: 0.6 },
+    deleteBtn: {
+      borderWidth: 1.5,
+      borderColor: colors.error,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      alignItems: "center",
+      marginTop: spacing.sm,
+    },
+    deleteBtnText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      color: colors.error,
+    },
+    saveBtnText: {
+      fontFamily: fonts.display,
+      fontSize: 17,
+      color: colors.white,
+    },
+    ratingsSection: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxxl,
+      gap: spacing.sm,
+    },
+    sectionTitle: {
+      fontFamily: fonts.display,
+      fontSize: 16,
+      color: colors.text,
+      marginBottom: spacing.sm,
+    },
+    ratingCard: {
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      ...shadows.card,
+    },
+    ratingHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    ratingAvatar: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.secondary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    ratingAvatarText: {
+      fontFamily: fonts.display,
+      fontSize: 16,
+      color: colors.white,
+    },
+    ratingUsername: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.text,
+    },
+    ratingScore: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    ratingComment: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      fontStyle: "italic",
+      marginBottom: spacing.sm,
+    },
+    ratingPhoto: {
+      width: "100%",
+      height: 160,
+      borderRadius: radius.sm,
+      resizeMode: "cover",
+      marginBottom: spacing.sm,
+    },
+    mapsBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+      marginTop: 6,
+      alignSelf: "flex-start",
+    },
+    mapsBtnText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.primary,
+    },
+    savedBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      backgroundColor: colors.success ?? "#27AE60",
+      borderRadius: radius.sm,
+      padding: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    savedBannerText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 14,
+      color: colors.white,
+    },
+    notVotedSection: {
+      marginTop: spacing.md,
+      paddingTop: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    notVotedLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 10,
+      color: colors.textMuted,
+      letterSpacing: 0.8,
+      textTransform: "uppercase",
+      marginBottom: spacing.sm,
+    },
+    notVotedChips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+    notVotedChip: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 3,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    notVotedChipText: { fontFamily: fonts.body, fontSize: 12, color: colors.textSecondary },
+    miniStats: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+    miniStat: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textMuted,
+      backgroundColor: colors.surfaceAlt,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+      borderRadius: radius.pill,
+    },
+    modalOverlay: {
+      position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      alignItems: "center", justifyContent: "center",
+      zIndex: 999,
+    },
+    modalBox: {
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      padding: spacing.xl,
+      margin: spacing.xl,
+      ...shadows.strong,
+    },
+    modalTitle: {
+      fontFamily: fonts.display,
+      fontSize: 18,
+      color: colors.text,
+      marginBottom: spacing.sm,
+    },
+    modalBody: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: spacing.xl,
+      lineHeight: 20,
+    },
+    modalActions: { flexDirection: "row", gap: spacing.md },
+    modalCancel: {
+      flex: 1, borderWidth: 1.5, borderColor: colors.border,
+      borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+    },
+    modalCancelText: {
+      fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textSecondary,
+    },
+    modalConfirm: {
+      flex: 1, backgroundColor: colors.error,
+      borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+    },
+    modalConfirmText: {
+      fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.white,
+    },
+  }), [colors]);
+
   if (loading || !place) {
     return (
       <View style={s.center}>
@@ -339,6 +656,7 @@ export default function PlaceDetail() {
                     ? setRecheio
                     : setQualidade_preco
                 }
+                colors={colors}
               />
             </View>
           ))}
@@ -467,317 +785,3 @@ export default function PlaceDetail() {
     </KeyboardAvoidingView>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { paddingBottom: 60 },
-  header: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    paddingHorizontal: spacing.lg,
-    paddingTop: 56,
-    paddingBottom: spacing.lg,
-    backgroundColor: colors.card,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.md,
-  },
-  back: { paddingTop: 4 },
-  headerInfo: { flex: 1 },
-  placeName: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.text,
-  },
-  placeAddress: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
-  statsCard: {
-    margin: spacing.lg,
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    ...shadows.card,
-  },
-  statsTitle: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.textMuted,
-    marginBottom: spacing.md,
-    textAlign: "center",
-  },
-  statsRow: { flexDirection: "row", justifyContent: "space-around" },
-  statItem: { alignItems: "center" },
-  statEmoji: { fontSize: 20, marginBottom: 4 },
-  statVal: {
-    fontFamily: fonts.display,
-    fontSize: 22,
-    color: colors.primary,
-  },
-  statLabel: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  card: {
-    margin: spacing.lg,
-    marginTop: 0,
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    ...shadows.card,
-  },
-  cardTitle: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.text,
-    marginBottom: spacing.lg,
-  },
-  paramRow: { marginBottom: spacing.lg },
-  paramLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  commentInput: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    padding: spacing.md,
-    fontSize: 14,
-    fontFamily: fonts.body,
-    color: colors.text,
-    backgroundColor: colors.surface,
-    minHeight: 80,
-    textAlignVertical: "top",
-    marginBottom: spacing.lg,
-  },
-  photoRow: { flexDirection: "row", gap: spacing.sm, marginBottom: spacing.md },
-  photoBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    padding: spacing.md,
-    borderRadius: radius.sm,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  photoBtnText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.primary,
-  },
-  photoPreview: {
-    position: "relative",
-    marginBottom: spacing.md,
-  },
-  photoImg: {
-    width: "100%",
-    height: 180,
-    borderRadius: radius.md,
-    resizeMode: "cover",
-  },
-  photoRemove: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: colors.white,
-    borderRadius: 12,
-  },
-  saveBtn: {
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    alignItems: "center",
-    marginTop: spacing.sm,
-    ...shadows.strong,
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-  deleteBtn: {
-    borderWidth: 1.5,
-    borderColor: colors.error,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: "center",
-    marginTop: spacing.sm,
-  },
-  deleteBtnText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    color: colors.error,
-  },
-  saveBtnText: {
-    fontFamily: fonts.display,
-    fontSize: 17,
-    color: colors.white,
-  },
-  ratingsSection: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.sm,
-  },
-  sectionTitle: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  ratingCard: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    ...shadows.card,
-  },
-  ratingHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  ratingAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  ratingAvatarText: {
-    fontFamily: fonts.display,
-    fontSize: 16,
-    color: colors.white,
-  },
-  ratingUsername: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.text,
-  },
-  ratingScore: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  ratingComment: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontStyle: "italic",
-    marginBottom: spacing.sm,
-  },
-  ratingPhoto: {
-    width: "100%",
-    height: 160,
-    borderRadius: radius.sm,
-    resizeMode: "cover",
-    marginBottom: spacing.sm,
-  },
-  mapsBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 6,
-    alignSelf: "flex-start",
-  },
-  mapsBtnText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.primary,
-  },
-  savedBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.success ?? "#27AE60",
-    borderRadius: radius.sm,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  savedBannerText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.white,
-  },
-  notVotedSection: {
-    marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  notVotedLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 10,
-    color: colors.textMuted,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: spacing.sm,
-  },
-  notVotedChips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  notVotedChip: {
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 3,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  notVotedChipText: { fontFamily: fonts.body, fontSize: 12, color: colors.textSecondary },
-  miniStats: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  miniStat: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textMuted,
-    backgroundColor: colors.surfaceAlt,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: radius.pill,
-  },
-  modalOverlay: {
-    position: "absolute", top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    alignItems: "center", justifyContent: "center",
-    zIndex: 999,
-  },
-  modalBox: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    margin: spacing.xl,
-    ...shadows.strong,
-  },
-  modalTitle: {
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  modalBody: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: spacing.xl,
-    lineHeight: 20,
-  },
-  modalActions: { flexDirection: "row", gap: spacing.md },
-  modalCancel: {
-    flex: 1, borderWidth: 1.5, borderColor: colors.border,
-    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
-  },
-  modalCancelText: {
-    fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textSecondary,
-  },
-  modalConfirm: {
-    flex: 1, backgroundColor: colors.error,
-    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
-  },
-  modalConfirmText: {
-    fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.white,
-  },
-});

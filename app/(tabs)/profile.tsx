@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Clipboard,
@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Event {
   id: string;
@@ -27,6 +27,7 @@ interface Event {
 }
 
 export default function ProfileScreen() {
+  const colors = useColors();
   const { user, activeEvent, logout, setActiveEvent, refreshEvent } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
@@ -101,6 +102,151 @@ export default function ProfileScreen() {
   }
 
   const isOwner = activeEvent?.owner_id === user?.id;
+
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    container: { padding: spacing.lg, gap: spacing.md, paddingBottom: 40 },
+    userCard: {
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      padding: spacing.xl,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.lg,
+      ...shadows.card,
+    },
+    avatar: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    avatarText: { fontFamily: fonts.display, fontSize: 28, color: colors.white },
+    username: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
+    since: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, marginTop: 2 },
+    activeCard: {
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      borderWidth: 2,
+      borderColor: colors.secondary,
+      ...shadows.card,
+    },
+    activeHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+    activeLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 12,
+      color: colors.success,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    nameRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    activeName: { fontFamily: fonts.display, fontSize: 18, color: colors.text, flex: 1 },
+    editBtn: { padding: 4 },
+    editRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    editInput: {
+      flex: 1,
+      fontFamily: fonts.display,
+      fontSize: 18,
+      color: colors.text,
+      borderBottomWidth: 2,
+      borderBottomColor: colors.primary,
+      paddingVertical: 4,
+    },
+    editSave: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    editCancel: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.surfaceAlt,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    codeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: 4,
+      alignSelf: "flex-start",
+    },
+    codeLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.textSecondary },
+    codePill: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 4,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    codeText: { fontFamily: fonts.display, fontSize: 14, color: colors.primary, letterSpacing: 1 },
+    participants: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: 4 },
+    sectionTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.text, marginTop: spacing.sm },
+    eventCard: {
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      ...shadows.card,
+    },
+    eventCardActive: { borderWidth: 1.5, borderColor: colors.secondary },
+    eventInfo: { flex: 1 },
+    eventName: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.text },
+    eventCode: { fontFamily: fonts.body, fontSize: 12, color: colors.primary, marginTop: 2 },
+    eventPart: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted, marginTop: 2 },
+    activeBadge: {
+      backgroundColor: colors.secondary,
+      borderRadius: radius.pill,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 4,
+    },
+    activeBadgeText: { fontFamily: fonts.bodySemiBold, fontSize: 12, color: colors.white },
+    footer: { gap: spacing.md, marginTop: spacing.md },
+    newRouteBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.sm,
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      ...shadows.card,
+    },
+    newRouteBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.primary },
+    logoutBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
+    logoutText: { fontFamily: fonts.body, fontSize: 14, color: colors.error },
+  }), [colors]);
 
   return (
     <FlatList
@@ -217,148 +363,3 @@ export default function ProfileScreen() {
     />
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  container: { padding: spacing.lg, gap: spacing.md, paddingBottom: 40 },
-  userCard: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    padding: spacing.xl,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.lg,
-    ...shadows.card,
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: { fontFamily: fonts.display, fontSize: 28, color: colors.white },
-  username: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
-  since: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  activeCard: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.secondary,
-    ...shadows.card,
-  },
-  activeHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
-  activeLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
-    color: colors.success,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  activeName: { fontFamily: fonts.display, fontSize: 18, color: colors.text, flex: 1 },
-  editBtn: { padding: 4 },
-  editRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  editInput: {
-    flex: 1,
-    fontFamily: fonts.display,
-    fontSize: 18,
-    color: colors.text,
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-    paddingVertical: 4,
-  },
-  editSave: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  editCancel: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surfaceAlt,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  codeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: 4,
-    alignSelf: "flex-start",
-  },
-  codeLabel: { fontFamily: fonts.body, fontSize: 13, color: colors.textSecondary },
-  codePill: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  codeText: { fontFamily: fonts.display, fontSize: 14, color: colors.primary, letterSpacing: 1 },
-  participants: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: 4 },
-  sectionTitle: { fontFamily: fonts.display, fontSize: 16, color: colors.text, marginTop: spacing.sm },
-  eventCard: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    ...shadows.card,
-  },
-  eventCardActive: { borderWidth: 1.5, borderColor: colors.secondary },
-  eventInfo: { flex: 1 },
-  eventName: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.text },
-  eventCode: { fontFamily: fonts.body, fontSize: 12, color: colors.primary, marginTop: 2 },
-  eventPart: { fontFamily: fonts.body, fontSize: 11, color: colors.textMuted, marginTop: 2 },
-  activeBadge: {
-    backgroundColor: colors.secondary,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 4,
-  },
-  activeBadgeText: { fontFamily: fonts.bodySemiBold, fontSize: 12, color: colors.white },
-  footer: { gap: spacing.md, marginTop: spacing.md },
-  newRouteBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    ...shadows.card,
-  },
-  newRouteBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.primary },
-  logoutBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  logoutText: { fontFamily: fonts.body, fontSize: 14, color: colors.error },
-});

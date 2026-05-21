@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -16,7 +16,7 @@ import {
 import MapView, { Marker, Polyline, UrlTile } from "react-native-maps";
 import { useAuth } from "../ctx/AuthContext";
 import { api, reverseGeocode, searchNearbyPOIs, type OverpassPOI } from "../lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../theme";
+import { useColors, fonts, radius, shadows, spacing } from "../theme";
 
 interface Place {
   id: string;
@@ -35,6 +35,7 @@ interface PendingPin {
 }
 
 export default function MapScreen() {
+  const colors = useColors();
   const { activeEvent } = useAuth();
   const router = useRouter();
   const mapRef = useRef<MapView>(null);
@@ -164,6 +165,86 @@ export default function MapScreen() {
     places.length > 0
       ? { latitude: places[0].latitude, longitude: places[0].longitude, latitudeDelta: 0.05, longitudeDelta: 0.05 }
       : { latitude: 38.7223, longitude: -9.1393, latitudeDelta: 0.1, longitudeDelta: 0.1 };
+
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1 },
+    map: { flex: 1 },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    markerContainer: { alignItems: "center" },
+    marker: {
+      width: 34, height: 34, borderRadius: 17,
+      backgroundColor: colors.primary,
+      alignItems: "center", justifyContent: "center",
+      borderWidth: 2.5, borderColor: colors.white,
+      ...shadows.strong,
+    },
+    markerRated: { backgroundColor: "#27AE60" },
+    markerPending: { backgroundColor: colors.secondary },
+    ratedDot: {
+      position: "absolute", top: -3, right: -3,
+      width: 12, height: 12, borderRadius: 6,
+      backgroundColor: "#27AE60", borderWidth: 2, borderColor: colors.white,
+    },
+    markerText: { fontFamily: fonts.display, fontSize: 14, color: colors.white },
+    markerTail: {
+      width: 0, height: 0,
+      borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 7,
+      borderLeftColor: "transparent", borderRightColor: "transparent",
+      borderTopColor: colors.primary, marginTop: -1,
+    },
+    markerTailRated: { borderTopColor: "#27AE60" },
+    markerTailPending: { borderTopColor: colors.secondary },
+    fab: { position: "absolute", bottom: 24, right: 16, gap: 10 },
+    fabBtn: {
+      width: 56, height: 56, borderRadius: 28,
+      backgroundColor: colors.primary,
+      alignItems: "center", justifyContent: "center",
+      ...shadows.strong,
+    },
+    fabBtnSecondary: { backgroundColor: colors.white, ...shadows.card },
+    emptyBanner: {
+      position: "absolute", bottom: 100, left: 16, right: 80,
+      backgroundColor: colors.card, borderRadius: radius.md,
+      padding: spacing.md, ...shadows.card,
+    },
+    emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary, textAlign: "center" },
+    sheet: {
+      position: "absolute", left: 0, right: 0,
+      backgroundColor: colors.card,
+      borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg,
+      padding: spacing.xl,
+      paddingBottom: Platform.OS === "ios" ? 32 : spacing.xl,
+      ...shadows.strong,
+    },
+    sheetLoading: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: spacing.md },
+    sheetLoadingText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary },
+    sheetLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text, marginBottom: spacing.sm },
+    sheetInput: {
+      borderWidth: 1.5, borderColor: colors.border, borderRadius: radius.sm,
+      padding: spacing.md, fontSize: 16, fontFamily: fonts.body,
+      color: colors.text, backgroundColor: colors.surface,
+    },
+    sheetAddress: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: spacing.xs },
+    sheetRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
+    sheetCancelBtn: {
+      flex: 1, borderWidth: 1.5, borderColor: colors.border,
+      borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+    },
+    sheetCancel: { marginTop: spacing.md, alignItems: "center", padding: spacing.sm },
+    sheetCancelText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textSecondary },
+    sheetSave: {
+      flex: 2, backgroundColor: colors.primary,
+      borderRadius: radius.md, padding: spacing.md, alignItems: "center",
+      ...shadows.strong,
+    },
+    sheetSaveText: { fontFamily: fonts.display, fontSize: 15, color: colors.white },
+    poiRow: {
+      flexDirection: "row", alignItems: "center", gap: spacing.sm,
+      paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border,
+    },
+    poiName: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
+    poiType: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  }), [colors]);
 
   if (loading) {
     return (
@@ -304,83 +385,3 @@ export default function MapScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1 },
-  map: { flex: 1 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  markerContainer: { alignItems: "center" },
-  marker: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: colors.primary,
-    alignItems: "center", justifyContent: "center",
-    borderWidth: 2.5, borderColor: colors.white,
-    ...shadows.strong,
-  },
-  markerRated: { backgroundColor: "#27AE60" },
-  markerPending: { backgroundColor: colors.secondary },
-  ratedDot: {
-    position: "absolute", top: -3, right: -3,
-    width: 12, height: 12, borderRadius: 6,
-    backgroundColor: "#27AE60", borderWidth: 2, borderColor: colors.white,
-  },
-  markerText: { fontFamily: fonts.display, fontSize: 14, color: colors.white },
-  markerTail: {
-    width: 0, height: 0,
-    borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 7,
-    borderLeftColor: "transparent", borderRightColor: "transparent",
-    borderTopColor: colors.primary, marginTop: -1,
-  },
-  markerTailRated: { borderTopColor: "#27AE60" },
-  markerTailPending: { borderTopColor: colors.secondary },
-  fab: { position: "absolute", bottom: 24, right: 16, gap: 10 },
-  fabBtn: {
-    width: 56, height: 56, borderRadius: 28,
-    backgroundColor: colors.primary,
-    alignItems: "center", justifyContent: "center",
-    ...shadows.strong,
-  },
-  fabBtnSecondary: { backgroundColor: colors.white, ...shadows.card },
-  emptyBanner: {
-    position: "absolute", bottom: 100, left: 16, right: 80,
-    backgroundColor: colors.card, borderRadius: radius.md,
-    padding: spacing.md, ...shadows.card,
-  },
-  emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary, textAlign: "center" },
-  sheet: {
-    position: "absolute", left: 0, right: 0,
-    backgroundColor: colors.card,
-    borderTopLeftRadius: radius.lg, borderTopRightRadius: radius.lg,
-    padding: spacing.xl,
-    paddingBottom: Platform.OS === "ios" ? 32 : spacing.xl,
-    ...shadows.strong,
-  },
-  sheetLoading: { flexDirection: "row", alignItems: "center", gap: spacing.md, paddingVertical: spacing.md },
-  sheetLoadingText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary },
-  sheetLabel: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.text, marginBottom: spacing.sm },
-  sheetInput: {
-    borderWidth: 1.5, borderColor: colors.border, borderRadius: radius.sm,
-    padding: spacing.md, fontSize: 16, fontFamily: fonts.body,
-    color: colors.text, backgroundColor: colors.surface,
-  },
-  sheetAddress: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: spacing.xs },
-  sheetRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.lg },
-  sheetCancelBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: colors.border,
-    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
-  },
-  sheetCancel: { marginTop: spacing.md, alignItems: "center", padding: spacing.sm },
-  sheetCancelText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.textSecondary },
-  sheetSave: {
-    flex: 2, backgroundColor: colors.primary,
-    borderRadius: radius.md, padding: spacing.md, alignItems: "center",
-    ...shadows.strong,
-  },
-  sheetSaveText: { fontFamily: fonts.display, fontSize: 15, color: colors.white },
-  poiRow: {
-    flexDirection: "row", alignItems: "center", gap: spacing.sm,
-    paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border,
-  },
-  poiName: { fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
-  poiType: { fontFamily: fonts.body, fontSize: 12, color: colors.textMuted, marginTop: 2 },
-});

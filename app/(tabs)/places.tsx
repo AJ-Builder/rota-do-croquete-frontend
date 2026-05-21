@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Place {
   id: string;
@@ -27,6 +27,7 @@ interface Place {
 }
 
 export default function PlacesScreen() {
+  const colors = useColors();
   const { activeEvent } = useAuth();
   const router = useRouter();
   const [places, setPlaces] = useState<Place[]>([]);
@@ -108,6 +109,120 @@ export default function PlacesScreen() {
       Alert.alert("Erro", e.message);
     }
   }
+
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    toolbar: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      backgroundColor: colors.card,
+    },
+    autoBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      borderRadius: radius.pill,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    autoBtnText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.primary,
+    },
+    list: {
+      padding: spacing.lg,
+      paddingBottom: 100,
+      gap: spacing.sm,
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      ...shadows.card,
+    },
+    cardLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
+    badge: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: spacing.md,
+      flexShrink: 0,
+    },
+    badgeText: {
+      fontFamily: fonts.display,
+      fontSize: 15,
+      color: colors.white,
+    },
+    info: { flex: 1 },
+    name: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 15,
+      color: colors.text,
+    },
+    address: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textSecondary,
+      marginTop: 2,
+    },
+    addedBy: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    cardRight: { flexDirection: "row", alignItems: "center", gap: 4 },
+    reorder: { gap: 2 },
+    reorderBtn: {
+      padding: 4,
+      borderRadius: radius.sm,
+    },
+    reorderDisabled: { opacity: 0.3 },
+    deleteBtn: {
+      padding: spacing.sm,
+      marginLeft: 4,
+    },
+    empty: { alignItems: "center", paddingVertical: spacing.xxxl },
+    emptyEmoji: { fontSize: 48, marginBottom: spacing.md },
+    emptyTitle: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.text,
+      marginBottom: spacing.sm,
+    },
+    emptyText: {
+      fontFamily: fonts.body,
+      fontSize: 14,
+      color: colors.textSecondary,
+      textAlign: "center",
+    },
+    fab: {
+      position: "absolute",
+      bottom: 24,
+      right: 16,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      ...shadows.strong,
+    },
+  }), [colors]);
 
   if (loading) {
     return (
@@ -200,116 +315,3 @@ export default function PlacesScreen() {
   );
 }
 
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  toolbar: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.card,
-  },
-  autoBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  autoBtnText: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.primary,
-  },
-  list: {
-    padding: spacing.lg,
-    paddingBottom: 100,
-    gap: spacing.sm,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    ...shadows.card,
-  },
-  cardLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
-  badge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: spacing.md,
-    flexShrink: 0,
-  },
-  badgeText: {
-    fontFamily: fonts.display,
-    fontSize: 15,
-    color: colors.white,
-  },
-  info: { flex: 1 },
-  name: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
-    color: colors.text,
-  },
-  address: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  addedBy: {
-    fontFamily: fonts.body,
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  cardRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  reorder: { gap: 2 },
-  reorderBtn: {
-    padding: 4,
-    borderRadius: radius.sm,
-  },
-  reorderDisabled: { opacity: 0.3 },
-  deleteBtn: {
-    padding: spacing.sm,
-    marginLeft: 4,
-  },
-  empty: { alignItems: "center", paddingVertical: spacing.xxxl },
-  emptyEmoji: { fontSize: 48, marginBottom: spacing.md },
-  emptyTitle: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  emptyText: {
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: "center",
-  },
-  fab: {
-    position: "absolute",
-    bottom: 24,
-    right: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadows.strong,
-  },
-});

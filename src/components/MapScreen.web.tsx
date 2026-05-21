@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../ctx/AuthContext";
 import { api } from "../lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../theme";
+import { useColors, fonts, radius, shadows, spacing } from "../theme";
 
 interface Place {
   id: string;
@@ -16,6 +16,7 @@ interface Place {
 }
 
 export default function MapScreenWeb() {
+  const colors = useColors();
   const { activeEvent } = useAuth();
   const router = useRouter();
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -132,6 +133,33 @@ export default function MapScreenWeb() {
     });
   }
 
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1 },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    fab: { position: "absolute", bottom: 24, right: 16, gap: 10 },
+    fabBtn: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      ...shadows.strong,
+    },
+    fabBtnSecondary: { backgroundColor: colors.white, ...shadows.card },
+    emptyBanner: {
+      position: "absolute",
+      bottom: 100,
+      left: 16,
+      right: 80,
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      ...shadows.card,
+    },
+    emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary, textAlign: "center" },
+  }), [colors]);
+
   if (loading) {
     return (
       <View style={s.center}>
@@ -165,30 +193,3 @@ export default function MapScreenWeb() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1 },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  fab: { position: "absolute", bottom: 24, right: 16, gap: 10 },
-  fabBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    alignItems: "center",
-    justifyContent: "center",
-    ...shadows.strong,
-  },
-  fabBtnSecondary: { backgroundColor: colors.white, ...shadows.card },
-  emptyBanner: {
-    position: "absolute",
-    bottom: 100,
-    left: 16,
-    right: 80,
-    backgroundColor: colors.card,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    ...shadows.card,
-  },
-  emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textSecondary, textAlign: "center" },
-});

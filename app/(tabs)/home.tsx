@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Clipboard,
@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Event {
   id: string;
@@ -67,6 +67,7 @@ function timeAgo(isoDate: string): string {
 }
 
 export default function HomeScreen() {
+  const colors = useColors();
   const { user, activeEvent, setActiveEvent, refreshEvent } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
@@ -146,178 +147,7 @@ export default function HomeScreen() {
 
   const otherEvents = events.filter((e) => e.id !== activeEvent?.id);
 
-  return (
-    <FlatList
-      style={s.flex}
-      contentContainerStyle={s.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-      }
-      ListHeaderComponent={
-        <>
-          {/* Greeting */}
-          <View style={s.greeting}>
-            <Text style={s.greetingName}>Olá, {user?.username}!</Text>
-            <Text style={s.greetingSub}>Pronto para descobrir croquetes?</Text>
-          </View>
-
-          {/* Active route card */}
-          {activeEvent ? (
-            <View style={s.activeCard}>
-              {/* Cover photo */}
-              {activeEvent.cover_photo_base64 ? (
-                <View style={s.coverContainer}>
-                  <Image source={{ uri: activeEvent.cover_photo_base64 }} style={s.coverPhoto} />
-                  {user?.id === activeEvent.owner_id && (
-                    <Pressable style={s.coverEditBtn} onPress={uploadCover} disabled={uploadingCover}>
-                      <Ionicons name="camera" size={16} color={colors.white} />
-                    </Pressable>
-                  )}
-                </View>
-              ) : user?.id === activeEvent.owner_id ? (
-                <Pressable style={s.coverPlaceholder} onPress={uploadCover} disabled={uploadingCover}>
-                  <Ionicons name="camera-outline" size={22} color={colors.textMuted} />
-                  <Text style={s.coverPlaceholderText}>Adicionar foto de grupo</Text>
-                </Pressable>
-              ) : null}
-
-              <View style={s.activeCardContent}>
-              <View style={s.activeHeader}>
-                <View style={s.activeDot} />
-                <Text style={s.activeLabel}>ROTA ACTIVA</Text>
-              </View>
-              <Text style={s.activeName}>{activeEvent.name}</Text>
-              <Text style={s.activeMeta}>
-                {activeEvent.participants.length} participante
-                {activeEvent.participants.length !== 1 ? "s" : ""}
-              </Text>
-
-              <Pressable style={s.codeRow} onPress={() => copyInvite(activeEvent.invite_code)}>
-                <Ionicons name="link-outline" size={14} color={colors.primary} />
-                <Text style={s.codeLinkText} numberOfLines={1}>
-                  {Platform.OS === "web"
-                    ? `…/join/${activeEvent.invite_code}`
-                    : activeEvent.invite_code}
-                </Text>
-                <Ionicons name="copy-outline" size={14} color={colors.primary} />
-              </Pressable>
-
-              <View style={s.quickActions}>
-                <Pressable
-                  style={s.quickBtn}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push("/(tabs)/map");
-                  }}
-                >
-                  <Ionicons name="map" size={24} color={colors.white} />
-                  <Text style={s.quickBtnText}>Mapa</Text>
-                </Pressable>
-                <Pressable
-                  style={[s.quickBtn, s.quickBtnOutline]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push("/(tabs)/places");
-                  }}
-                >
-                  <Ionicons name="list" size={24} color={colors.primary} />
-                  <Text style={[s.quickBtnText, s.quickBtnTextOutline]}>Locais</Text>
-                </Pressable>
-                <Pressable
-                  style={[s.quickBtn, s.quickBtnOutline]}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push("/(tabs)/ranking");
-                  }}
-                >
-                  <Ionicons name="trophy" size={24} color={colors.primary} />
-                  <Text style={[s.quickBtnText, s.quickBtnTextOutline]}>Ranking</Text>
-                </Pressable>
-              </View>
-
-              <View style={s.bottomBtns}>
-                <Pressable
-                  style={s.membersBtn}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(`/event/${activeEvent.id}/members` as any);
-                  }}
-                >
-                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
-                  <Text style={s.membersBtnText}>
-                    {user?.id === activeEvent.owner_id ? "Gerir" : "Participantes"}
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={s.resultsBtn}
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(`/event/${activeEvent.id}/results` as any);
-                  }}
-                >
-                  <Ionicons name="trophy-outline" size={16} color={colors.primary} />
-                  <Text style={s.resultsBtnText}>Resultados</Text>
-                </Pressable>
-              </View>
-
-              {activity.length > 0 && (
-                <View style={s.activitySection}>
-                  <Text style={s.activityTitle}>Actividade recente</Text>
-                  {activity.map((item) => (
-                    <View key={item.id} style={s.activityRow}>
-                      <Text style={s.activityIcon}>{activityIcon(item.action)}</Text>
-                      <Text style={s.activityText} numberOfLines={1}>
-                        {formatActivity(item)}
-                      </Text>
-                      <Text style={s.activityTime}>{timeAgo(item.created_at)}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-              </View>{/* end activeCardContent */}
-            </View>
-          ) : (
-            <View style={s.emptyCard}>
-              <Text style={s.emptyEmoji}>🧆</Text>
-              <Text style={s.emptyTitle}>Sem rota activa</Text>
-              <Text style={s.emptySub}>
-                Cria uma nova rota ou entra numa existente com um código de convite
-              </Text>
-            </View>
-          )}
-
-          {otherEvents.length > 0 && (
-            <Text style={s.sectionTitle}>Outras rotas</Text>
-          )}
-        </>
-      }
-      data={otherEvents}
-      keyExtractor={(e) => e.id}
-      renderItem={({ item }) => (
-        <Pressable style={s.eventCard} onPress={() => switchEvent(item)}>
-          <View style={s.eventInfo}>
-            <Text style={s.eventName}>{item.name}</Text>
-            <Text style={s.eventMeta}>
-              {item.participants.length} participante
-              {item.participants.length !== 1 ? "s" : ""} · {item.invite_code}
-            </Text>
-          </View>
-          <View style={s.activateBadge}>
-            <Text style={s.activateBadgeText}>Activar</Text>
-          </View>
-        </Pressable>
-      )}
-      ListFooterComponent={
-        <Pressable style={s.newRouteBtn} onPress={() => router.push("/onboarding")}>
-          <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
-          <Text style={s.newRouteBtnText}>Nova rota / entrar com código</Text>
-        </Pressable>
-      }
-    />
-  );
-}
-
-const s = StyleSheet.create({
+  const s = useMemo(() => StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.surface },
   container: { padding: spacing.lg, gap: spacing.md, paddingBottom: 40 },
   greeting: { paddingTop: spacing.sm, paddingBottom: spacing.xs },
@@ -504,4 +334,175 @@ const s = StyleSheet.create({
     ...shadows.card,
   },
   newRouteBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.primary },
-});
+  }), [colors]);
+
+  return (
+    <FlatList
+      style={s.flex}
+      contentContainerStyle={s.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+      }
+      ListHeaderComponent={
+        <>
+          {/* Greeting */}
+          <View style={s.greeting}>
+            <Text style={s.greetingName}>Olá, {user?.username}!</Text>
+            <Text style={s.greetingSub}>Pronto para descobrir croquetes?</Text>
+          </View>
+
+          {/* Active route card */}
+          {activeEvent ? (
+            <View style={s.activeCard}>
+              {/* Cover photo */}
+              {activeEvent.cover_photo_base64 ? (
+                <View style={s.coverContainer}>
+                  <Image source={{ uri: activeEvent.cover_photo_base64 }} style={s.coverPhoto} />
+                  {user?.id === activeEvent.owner_id && (
+                    <Pressable style={s.coverEditBtn} onPress={uploadCover} disabled={uploadingCover}>
+                      <Ionicons name="camera" size={16} color={colors.white} />
+                    </Pressable>
+                  )}
+                </View>
+              ) : user?.id === activeEvent.owner_id ? (
+                <Pressable style={s.coverPlaceholder} onPress={uploadCover} disabled={uploadingCover}>
+                  <Ionicons name="camera-outline" size={22} color={colors.textMuted} />
+                  <Text style={s.coverPlaceholderText}>Adicionar foto de grupo</Text>
+                </Pressable>
+              ) : null}
+
+              <View style={s.activeCardContent}>
+              <View style={s.activeHeader}>
+                <View style={s.activeDot} />
+                <Text style={s.activeLabel}>ROTA ACTIVA</Text>
+              </View>
+              <Text style={s.activeName}>{activeEvent.name}</Text>
+              <Text style={s.activeMeta}>
+                {activeEvent.participants.length} participante
+                {activeEvent.participants.length !== 1 ? "s" : ""}
+              </Text>
+
+              <Pressable style={s.codeRow} onPress={() => copyInvite(activeEvent.invite_code)}>
+                <Ionicons name="link-outline" size={14} color={colors.primary} />
+                <Text style={s.codeLinkText} numberOfLines={1}>
+                  {Platform.OS === "web"
+                    ? `…/join/${activeEvent.invite_code}`
+                    : activeEvent.invite_code}
+                </Text>
+                <Ionicons name="copy-outline" size={14} color={colors.primary} />
+              </Pressable>
+
+              <View style={s.quickActions}>
+                <Pressable
+                  style={s.quickBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push("/(tabs)/map");
+                  }}
+                >
+                  <Ionicons name="map" size={24} color={colors.white} />
+                  <Text style={s.quickBtnText}>Mapa</Text>
+                </Pressable>
+                <Pressable
+                  style={[s.quickBtn, s.quickBtnOutline]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push("/(tabs)/places");
+                  }}
+                >
+                  <Ionicons name="list" size={24} color={colors.primary} />
+                  <Text style={[s.quickBtnText, s.quickBtnTextOutline]}>Locais</Text>
+                </Pressable>
+                <Pressable
+                  style={[s.quickBtn, s.quickBtnOutline]}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push("/(tabs)/ranking");
+                  }}
+                >
+                  <Ionicons name="trophy" size={24} color={colors.primary} />
+                  <Text style={[s.quickBtnText, s.quickBtnTextOutline]}>Ranking</Text>
+                </Pressable>
+              </View>
+
+              <View style={s.bottomBtns}>
+                <Pressable
+                  style={s.membersBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/event/${activeEvent.id}/members` as any);
+                  }}
+                >
+                  <Ionicons name="people-outline" size={16} color={colors.textSecondary} />
+                  <Text style={s.membersBtnText}>
+                    {user?.id === activeEvent.owner_id ? "Gerir" : "Participantes"}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  style={s.resultsBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    router.push(`/event/${activeEvent.id}/results` as any);
+                  }}
+                >
+                  <Ionicons name="trophy-outline" size={16} color={colors.primary} />
+                  <Text style={s.resultsBtnText}>Resultados</Text>
+                </Pressable>
+              </View>
+
+              {activity.length > 0 && (
+                <View style={s.activitySection}>
+                  <Text style={s.activityTitle}>Actividade recente</Text>
+                  {activity.map((item) => (
+                    <View key={item.id} style={s.activityRow}>
+                      <Text style={s.activityIcon}>{activityIcon(item.action)}</Text>
+                      <Text style={s.activityText} numberOfLines={1}>
+                        {formatActivity(item)}
+                      </Text>
+                      <Text style={s.activityTime}>{timeAgo(item.created_at)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+              </View>{/* end activeCardContent */}
+            </View>
+          ) : (
+            <View style={s.emptyCard}>
+              <Text style={s.emptyEmoji}>🧆</Text>
+              <Text style={s.emptyTitle}>Sem rota activa</Text>
+              <Text style={s.emptySub}>
+                Cria uma nova rota ou entra numa existente com um código de convite
+              </Text>
+            </View>
+          )}
+
+          {otherEvents.length > 0 && (
+            <Text style={s.sectionTitle}>Outras rotas</Text>
+          )}
+        </>
+      }
+      data={otherEvents}
+      keyExtractor={(e) => e.id}
+      renderItem={({ item }) => (
+        <Pressable style={s.eventCard} onPress={() => switchEvent(item)}>
+          <View style={s.eventInfo}>
+            <Text style={s.eventName}>{item.name}</Text>
+            <Text style={s.eventMeta}>
+              {item.participants.length} participante
+              {item.participants.length !== 1 ? "s" : ""} · {item.invite_code}
+            </Text>
+          </View>
+          <View style={s.activateBadge}>
+            <Text style={s.activateBadgeText}>Activar</Text>
+          </View>
+        </Pressable>
+      )}
+      ListFooterComponent={
+        <Pressable style={s.newRouteBtn} onPress={() => router.push("/onboarding")}>
+          <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
+          <Text style={s.newRouteBtnText}>Nova rota / entrar com código</Text>
+        </Pressable>
+      }
+    />
+  );
+}

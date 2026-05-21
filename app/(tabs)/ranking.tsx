@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface RankingEntry {
   place_id: string;
@@ -39,6 +39,7 @@ const METRICS: { key: Metric; label: string; emoji: string }[] = [
 const MEDALS = ["🥇", "🥈", "🥉"];
 
 function Stars({ value }: { value: number }) {
+  const colors = useColors();
   return (
     <View style={{ flexDirection: "row", gap: 1 }}>
       {[1, 2, 3, 4, 5].map((i) => (
@@ -54,6 +55,7 @@ function Stars({ value }: { value: number }) {
 }
 
 export default function RankingScreen() {
+  const colors = useColors();
   const { activeEvent } = useAuth();
   const router = useRouter();
   const [entries, setEntries] = useState<RankingEntry[]>([]);
@@ -83,109 +85,7 @@ export default function RankingScreen() {
 
   const sorted = [...entries].sort((a, b) => b[metric] - a[metric]);
 
-  if (loading) {
-    return (
-      <View style={s.center}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={s.flex}>
-      <View style={s.filterRow}>
-        {METRICS.map((m) => (
-          <Pressable
-            key={m.key}
-            style={[s.chip, metric === m.key && s.chipActive]}
-            onPress={() => setMetric(m.key)}
-          >
-            <Text style={s.chipEmoji}>{m.emoji}</Text>
-            <Text style={[s.chipText, metric === m.key && s.chipTextActive]}>
-              {m.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <FlatList
-        data={sorted}
-        keyExtractor={(e) => e.place_id}
-        contentContainerStyle={s.list}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-        }
-        ListEmptyComponent={
-          <View style={s.empty}>
-            <Text style={s.emptyEmoji}>📊</Text>
-            <Text style={s.emptyTitle}>Ainda sem avaliações</Text>
-            <Text style={s.emptyText}>
-              Vai a um local e avalia o croquete!
-            </Text>
-          </View>
-        }
-        renderItem={({ item, index }) => {
-          const score = item[metric];
-          const hasRatings = item.ratings_count > 0;
-          return (
-            <Pressable
-              style={[s.card, index === 0 && hasRatings && s.cardFirst]}
-              onPress={() => router.push(`/place/${item.place_id}` as any)}
-            >
-              <View style={s.cardHeader}>
-                <Text style={s.medal}>
-                  {index < 3 && hasRatings ? MEDALS[index] : `${index + 1}.`}
-                </Text>
-                <View style={s.cardInfo}>
-                  <Text style={s.placeName} numberOfLines={1}>
-                    {item.name}
-                  </Text>
-                  <Text style={s.placeAddress} numberOfLines={1}>
-                    {item.address}
-                  </Text>
-                  {hasRatings && (
-                    <View style={s.votosChip}>
-                      <Text style={s.votosChipText}>
-                        {item.ratings_count}/{activeEvent?.participants?.length ?? "?"} votos
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View style={s.scoreBox}>
-                  <Text style={s.scoreNum}>
-                    {hasRatings ? score.toFixed(1) : "—"}
-                  </Text>
-                  <Text style={s.scoreLabel}>
-                    {METRICS.find((m) => m.key === metric)?.emoji}
-                  </Text>
-                </View>
-              </View>
-
-              {hasRatings && metric === "global_score" && (
-                <View style={s.breakdown}>
-                  {(["sabor", "crocancia", "recheio", "qualidade_preco"] as const).map(
-                    (k) => (
-                      <View key={k} style={s.breakdownRow}>
-                        <Text style={s.breakdownLabel}>
-                          {METRICS.find((m) => m.key === k)?.emoji}{" "}
-                          {METRICS.find((m) => m.key === k)?.label}
-                        </Text>
-                        <Stars value={item[k]} />
-                        <Text style={s.breakdownVal}>{item[k].toFixed(1)}</Text>
-                      </View>
-                    )
-                  )}
-                </View>
-              )}
-            </Pressable>
-          );
-        }}
-      />
-    </View>
-  );
-}
-
-const s = StyleSheet.create({
+  const s = useMemo(() => StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.surface },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   filterRow: {
@@ -313,4 +213,107 @@ const s = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
   },
-});
+  }), [colors]);
+
+  if (loading) {
+    return (
+      <View style={s.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={s.flex}>
+      <View style={s.filterRow}>
+        {METRICS.map((m) => (
+          <Pressable
+            key={m.key}
+            style={[s.chip, metric === m.key && s.chipActive]}
+            onPress={() => setMetric(m.key)}
+          >
+            <Text style={s.chipEmoji}>{m.emoji}</Text>
+            <Text style={[s.chipText, metric === m.key && s.chipTextActive]}>
+              {m.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <FlatList
+        data={sorted}
+        keyExtractor={(e) => e.place_id}
+        contentContainerStyle={s.list}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
+        }
+        ListEmptyComponent={
+          <View style={s.empty}>
+            <Text style={s.emptyEmoji}>📊</Text>
+            <Text style={s.emptyTitle}>Ainda sem avaliações</Text>
+            <Text style={s.emptyText}>
+              Vai a um local e avalia o croquete!
+            </Text>
+          </View>
+        }
+        renderItem={({ item, index }) => {
+          const score = item[metric];
+          const hasRatings = item.ratings_count > 0;
+          return (
+            <Pressable
+              style={[s.card, index === 0 && hasRatings && s.cardFirst]}
+              onPress={() => router.push(`/place/${item.place_id}` as any)}
+            >
+              <View style={s.cardHeader}>
+                <Text style={s.medal}>
+                  {index < 3 && hasRatings ? MEDALS[index] : `${index + 1}.`}
+                </Text>
+                <View style={s.cardInfo}>
+                  <Text style={s.placeName} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+                  <Text style={s.placeAddress} numberOfLines={1}>
+                    {item.address}
+                  </Text>
+                  {hasRatings && (
+                    <View style={s.votosChip}>
+                      <Text style={s.votosChipText}>
+                        {item.ratings_count}/{activeEvent?.participants?.length ?? "?"} votos
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View style={s.scoreBox}>
+                  <Text style={s.scoreNum}>
+                    {hasRatings ? score.toFixed(1) : "—"}
+                  </Text>
+                  <Text style={s.scoreLabel}>
+                    {METRICS.find((m) => m.key === metric)?.emoji}
+                  </Text>
+                </View>
+              </View>
+
+              {hasRatings && metric === "global_score" && (
+                <View style={s.breakdown}>
+                  {(["sabor", "crocancia", "recheio", "qualidade_preco"] as const).map(
+                    (k) => (
+                      <View key={k} style={s.breakdownRow}>
+                        <Text style={s.breakdownLabel}>
+                          {METRICS.find((m) => m.key === k)?.emoji}{" "}
+                          {METRICS.find((m) => m.key === k)?.label}
+                        </Text>
+                        <Stars value={item[k]} />
+                        <Text style={s.breakdownVal}>{item[k].toFixed(1)}</Text>
+                      </View>
+                    )
+                  )}
+                </View>
+              )}
+            </Pressable>
+          );
+        }}
+      />
+    </View>
+  );
+}
+

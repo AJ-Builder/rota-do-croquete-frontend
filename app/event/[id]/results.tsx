@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../../src/ctx/AuthContext";
 import { api } from "../../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../../src/theme";
 
 interface RankingEntry {
   place_id: string;
@@ -55,6 +55,7 @@ function formatDate(iso: string): string {
 }
 
 export default function ResultsScreen() {
+  const colors = useColors();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
   const router = useRouter();
@@ -99,6 +100,142 @@ export default function ResultsScreen() {
       Alert.alert("Link copiado!", "Cola no WhatsApp para partilhar os resultados 🧆");
     }
   }
+
+  const s = useMemo(() => StyleSheet.create({
+    flex: { flex: 1, backgroundColor: colors.surface },
+    center: { flex: 1, alignItems: "center", justifyContent: "center" },
+    container: { padding: spacing.lg, paddingBottom: 60 },
+    back: { marginBottom: spacing.md },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: radius.lg,
+      overflow: "hidden",
+      ...shadows.strong,
+      marginBottom: spacing.lg,
+    },
+    coverPhoto: { width: "100%", height: 200, resizeMode: "cover" },
+    coverGradient: {
+      height: 140,
+      backgroundColor: colors.secondary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    coverEmoji: { fontSize: 60 },
+    cardBody: { padding: spacing.xl, gap: spacing.sm },
+    eventName: {
+      fontFamily: fonts.display,
+      fontSize: 24,
+      color: colors.text,
+      textAlign: "center",
+    },
+    eventDate: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: "center",
+      marginBottom: spacing.md,
+    },
+    podium: {
+      flexDirection: "row",
+      gap: spacing.sm,
+      marginVertical: spacing.md,
+    },
+    podiumItem: {
+      flex: 1,
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.md,
+      padding: spacing.md,
+      alignItems: "center",
+      gap: 4,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    podiumFirst: {
+      backgroundColor: "#FFF3E0",
+      borderColor: colors.secondary,
+      borderWidth: 2,
+    },
+    podiumMedal: { fontSize: 24 },
+    podiumName: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 12,
+      color: colors.text,
+      textAlign: "center",
+    },
+    podiumScore: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.primary,
+    },
+    podiumVotes: {
+      fontFamily: fonts.body,
+      fontSize: 10,
+      color: colors.textMuted,
+    },
+    restList: {
+      gap: 6,
+      marginBottom: spacing.sm,
+    },
+    restRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      paddingVertical: 4,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    restPosition: {
+      fontFamily: fonts.display,
+      fontSize: 14,
+      color: colors.textMuted,
+      width: 24,
+    },
+    restName: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
+    restScore: { fontFamily: fonts.display, fontSize: 14, color: colors.primary },
+    empty: { paddingVertical: spacing.xl, alignItems: "center" },
+    emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.md },
+    participantsLabel: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 10,
+      color: colors.textMuted,
+      letterSpacing: 0.8,
+      textTransform: "uppercase",
+      marginBottom: 4,
+    },
+    participantsNames: {
+      fontFamily: fonts.body,
+      fontSize: 13,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
+    branding: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 12,
+      color: colors.textMuted,
+      textAlign: "center",
+      marginTop: spacing.md,
+      letterSpacing: 0.5,
+    },
+    shareBtn: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.sm,
+      backgroundColor: colors.primary,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      ...shadows.strong,
+    },
+    shareBtnText: { fontFamily: fonts.display, fontSize: 17, color: colors.white },
+    hint: {
+      fontFamily: fonts.body,
+      fontSize: 12,
+      color: colors.textMuted,
+      textAlign: "center",
+      marginTop: spacing.md,
+    },
+  }), [colors]);
 
   if (loading || !event) {
     return (
@@ -191,139 +328,3 @@ export default function ResultsScreen() {
     </ScrollView>
   );
 }
-
-const s = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: colors.surface },
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  container: { padding: spacing.lg, paddingBottom: 60 },
-  back: { marginBottom: spacing.md },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: radius.lg,
-    overflow: "hidden",
-    ...shadows.strong,
-    marginBottom: spacing.lg,
-  },
-  coverPhoto: { width: "100%", height: 200, resizeMode: "cover" },
-  coverGradient: {
-    height: 140,
-    backgroundColor: colors.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  coverEmoji: { fontSize: 60 },
-  cardBody: { padding: spacing.xl, gap: spacing.sm },
-  eventName: {
-    fontFamily: fonts.display,
-    fontSize: 24,
-    color: colors.text,
-    textAlign: "center",
-  },
-  eventDate: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textMuted,
-    textAlign: "center",
-    marginBottom: spacing.md,
-  },
-  podium: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    marginVertical: spacing.md,
-  },
-  podiumItem: {
-    flex: 1,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    alignItems: "center",
-    gap: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  podiumFirst: {
-    backgroundColor: "#FFF3E0",
-    borderColor: colors.secondary,
-    borderWidth: 2,
-  },
-  podiumMedal: { fontSize: 24 },
-  podiumName: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
-    color: colors.text,
-    textAlign: "center",
-  },
-  podiumScore: {
-    fontFamily: fonts.display,
-    fontSize: 20,
-    color: colors.primary,
-  },
-  podiumVotes: {
-    fontFamily: fonts.body,
-    fontSize: 10,
-    color: colors.textMuted,
-  },
-  restList: {
-    gap: 6,
-    marginBottom: spacing.sm,
-  },
-  restRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingVertical: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  restPosition: {
-    fontFamily: fonts.display,
-    fontSize: 14,
-    color: colors.textMuted,
-    width: 24,
-  },
-  restName: { flex: 1, fontFamily: fonts.bodySemiBold, fontSize: 14, color: colors.text },
-  restScore: { fontFamily: fonts.display, fontSize: 14, color: colors.primary },
-  empty: { paddingVertical: spacing.xl, alignItems: "center" },
-  emptyText: { fontFamily: fonts.body, fontSize: 14, color: colors.textMuted },
-  divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.md },
-  participantsLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 10,
-    color: colors.textMuted,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    marginBottom: 4,
-  },
-  participantsNames: {
-    fontFamily: fonts.body,
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  branding: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
-    color: colors.textMuted,
-    textAlign: "center",
-    marginTop: spacing.md,
-    letterSpacing: 0.5,
-  },
-  shareBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    padding: spacing.lg,
-    ...shadows.strong,
-  },
-  shareBtnText: { fontFamily: fonts.display, fontSize: 17, color: colors.white },
-  hint: {
-    fontFamily: fonts.body,
-    fontSize: 12,
-    color: colors.textMuted,
-    textAlign: "center",
-    marginTop: spacing.md,
-  },
-});

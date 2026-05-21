@@ -1,10 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { colors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface EventData {
   id: string;
@@ -16,6 +16,7 @@ interface EventData {
 }
 
 export default function JoinScreen() {
+  const colors = useColors();
   const { code } = useLocalSearchParams<{ code: string }>();
   const { user, loading, setActiveEvent } = useAuth();
   const router = useRouter();
@@ -42,6 +43,39 @@ export default function JoinScreen() {
     }
   }
 
+  const s = useMemo(() => StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.xl,
+    },
+    emoji: { fontSize: 72, marginBottom: spacing.lg },
+    title: {
+      fontFamily: fonts.display,
+      fontSize: 28,
+      color: colors.text,
+      textAlign: "center",
+    },
+    sub: {
+      fontFamily: fonts.body,
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginTop: spacing.sm,
+      textAlign: "center",
+    },
+    btn: {
+      marginTop: spacing.xl,
+      backgroundColor: colors.primary,
+      borderRadius: radius.md,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xl,
+      ...shadows.strong,
+    },
+    btnText: { fontFamily: fonts.display, fontSize: 16, color: colors.white },
+  }), [colors]);
+
   return (
     <View style={s.container}>
       <Text style={s.emoji}>🧆</Text>
@@ -63,36 +97,3 @@ export default function JoinScreen() {
     </View>
   );
 }
-
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.xl,
-  },
-  emoji: { fontSize: 72, marginBottom: spacing.lg },
-  title: {
-    fontFamily: fonts.display,
-    fontSize: 28,
-    color: colors.text,
-    textAlign: "center",
-  },
-  sub: {
-    fontFamily: fonts.body,
-    fontSize: 16,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  btn: {
-    marginTop: spacing.xl,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xl,
-    ...shadows.strong,
-  },
-  btnText: { fontFamily: fonts.display, fontSize: 16, color: colors.white },
-});
