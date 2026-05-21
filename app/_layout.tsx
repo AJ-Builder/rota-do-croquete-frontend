@@ -12,6 +12,7 @@ import {
 import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { View } from "react-native";
 import { AuthProvider, useAuth } from "../src/ctx/AuthContext";
 import { ThemeProvider } from "../src/ctx/ThemeProvider";
 
@@ -58,7 +59,13 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) return null;
+  // Safety net: hide splash after 3s even if fonts fail (e.g. no network on iOS Safari resume)
+  useEffect(() => {
+    const t = setTimeout(() => SplashScreen.hideAsync(), 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: "#FFF9F2" }} />;
 
   return (
     <ThemeProvider>
