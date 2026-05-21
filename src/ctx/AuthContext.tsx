@@ -41,16 +41,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function bootstrap() {
+    const withTimeout = <T,>(p: Promise<T>, ms: number): Promise<T> =>
+      Promise.race([p, new Promise<never>((_, r) => setTimeout(() => r(new Error("timeout")), ms))]);
+
     try {
       const token = await AsyncStorage.getItem("croquete_token");
       if (!token) return;
-      const me = await api.get<User>("/api/auth/me");
+
+      let me: User;
+      try {
+        me = await withTimeout(api.get<User>("/api/auth/me"), 8000);
+      } catch {
+        // Backend cold start or no network — keep token, show login to retry
+        return;
+      }
       setUser(me);
 
       const savedEventId = await AsyncStorage.getItem("croquete_active_event");
       if (savedEventId) {
         try {
-          const ev = await api.get<Event>(`/api/events/${savedEventId}`);
+          const ev = await withTimeout(api.get<Event>(`/api/events/${savedEventId}`), 8000);
           setActiveEventState(ev);
         } catch {
           await AsyncStorage.removeItem("croquete_active_event");
