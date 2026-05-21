@@ -143,6 +143,13 @@ export default function RankingScreen() {
                   <Text style={s.placeAddress} numberOfLines={1}>
                     {item.address}
                   </Text>
+                  {hasRatings && (
+                    <View style={s.votosChip}>
+                      <Text style={s.votosChipText}>
+                        {item.ratings_count}/{activeEvent?.participants?.length ?? "?"} votos
+                      </Text>
+                    </View>
+                  )}
                 </View>
                 <View style={s.scoreBox}>
                   <Text style={s.scoreNum}>
@@ -168,9 +175,6 @@ export default function RankingScreen() {
                       </View>
                     )
                   )}
-                  <Text style={s.ratingsCount}>
-                    {item.ratings_count} avaliação{item.ratings_count !== 1 ? "ões" : ""}
-                  </Text>
                 </View>
               )}
             </Pressable>
@@ -280,12 +284,20 @@ const s = StyleSheet.create({
     width: 30,
     textAlign: "right",
   },
-  ratingsCount: {
-    fontFamily: fonts.body,
+  votosChip: {
+    alignSelf: "flex-start",
+    marginTop: 4,
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  votosChipText: {
+    fontFamily: fonts.bodySemiBold,
     fontSize: 11,
     color: colors.textMuted,
-    marginTop: 4,
-    textAlign: "right",
   },
   empty: { alignItems: "center", paddingVertical: spacing.xxxl },
   emptyEmoji: { fontSize: 48, marginBottom: spacing.md },

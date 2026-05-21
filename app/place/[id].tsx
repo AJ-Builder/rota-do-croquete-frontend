@@ -86,6 +86,7 @@ export default function PlaceDetail() {
   const [place, setPlace] = useState<Place | null>(null);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [myRating, setMyRating] = useState<Partial<Rating> | null>(null);
+  const [participants, setParticipants] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -102,13 +103,15 @@ export default function PlaceDetail() {
   const load = useCallback(async () => {
     if (!id || !activeEvent) return;
     try {
-      const [placeData, ratingsData, myRatingData] = await Promise.all([
+      const [placeData, ratingsData, myRatingData, participantsData] = await Promise.all([
         api.get<Place>(`/api/places/${id}`),
         api.get<Rating[]>(`/api/places/${id}/ratings`),
         api.get<Partial<Rating>>(`/api/places/${id}/my-rating`),
+        api.get<{ username: string }[]>(`/api/events/${activeEvent.id}/participants`),
       ]);
       setPlace(placeData);
       setRatings(ratingsData);
+      setParticipants(participantsData.map((p) => p.username));
       if (myRatingData && myRatingData.sabor) {
         setMyRating(myRatingData);
         setSabor(myRatingData.sabor!);
@@ -286,6 +289,23 @@ export default function PlaceDetail() {
                 </View>
               ))}
             </View>
+            {(() => {
+              const voted = new Set(ratings.map((r) => r.username));
+              const notVoted = participants.filter((p) => !voted.has(p));
+              if (notVoted.length === 0) return null;
+              return (
+                <View style={s.notVotedSection}>
+                  <Text style={s.notVotedLabel}>⏳ Ainda não avaliaram</Text>
+                  <View style={s.notVotedChips}>
+                    {notVoted.map((name) => (
+                      <View key={name} style={s.notVotedChip}>
+                        <Text style={s.notVotedChipText}>{name}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })()}
           </View>
         )}
 
@@ -685,6 +705,30 @@ const s = StyleSheet.create({
     fontSize: 14,
     color: colors.white,
   },
+  notVotedSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  notVotedLabel: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 10,
+    color: colors.textMuted,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+    marginBottom: spacing.sm,
+  },
+  notVotedChips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  notVotedChip: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  notVotedChipText: { fontFamily: fonts.body, fontSize: 12, color: colors.textSecondary },
   miniStats: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   miniStat: {
     fontFamily: fonts.body,

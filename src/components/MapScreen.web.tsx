@@ -70,6 +70,13 @@ export default function MapScreenWeb() {
       const map = Lx.map(mapContainerRef.current!, { zoomControl: true }).setView(center, 15);
       mapRef.current = map;
 
+      if (places.length === 0) {
+        navigator.geolocation?.getCurrentPosition(
+          (pos) => map.setView([pos.coords.latitude, pos.coords.longitude], 16),
+          () => {}
+        );
+      }
+
       Lx.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "© OpenStreetMap",

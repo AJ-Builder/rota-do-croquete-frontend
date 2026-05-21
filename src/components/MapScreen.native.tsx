@@ -75,6 +75,21 @@ export default function MapScreen() {
     loadPlaces().finally(() => setLoading(false));
   }, [loadPlaces]);
 
+  useEffect(() => {
+    if (loading || places.length > 0) return;
+    Location.requestForegroundPermissionsAsync().then(({ status }) => {
+      if (status !== "granted") return;
+      Location.getCurrentPositionAsync({}).then((loc) => {
+        mapRef.current?.animateToRegion({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+          latitudeDelta: 0.02,
+          longitudeDelta: 0.02,
+        }, 600);
+      }).catch(() => {});
+    });
+  }, [loading, places.length]);
+
   async function centerOnUser() {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") return;
