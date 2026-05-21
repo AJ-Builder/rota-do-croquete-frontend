@@ -13,6 +13,7 @@ import { Slot, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AuthProvider, useAuth } from "../src/ctx/AuthContext";
+import { ThemeProvider } from "../src/ctx/ThemeProvider";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -60,8 +61,10 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <AuthProvider>
-      <NavigationGate />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NavigationGate />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

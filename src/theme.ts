@@ -1,4 +1,17 @@
+import { createContext, useContext } from "react";
 import { useColorScheme } from "react-native";
+
+export type ThemeMode = "system" | "light" | "dark";
+
+interface ThemeModeContextType {
+  mode: ThemeMode;
+  setMode: (m: ThemeMode) => void;
+}
+
+export const ThemeModeContext = createContext<ThemeModeContextType>({
+  mode: "system",
+  setMode: () => {},
+});
 
 export const lightColors = {
   brand: "#E67E22",
@@ -35,8 +48,14 @@ export const darkColors = {
 };
 
 export function useColors() {
-  const scheme = useColorScheme();
-  return scheme === "dark" ? darkColors : lightColors;
+  const { mode } = useContext(ThemeModeContext);
+  const system = useColorScheme();
+  const isDark = mode === "dark" || (mode === "system" && system === "dark");
+  return isDark ? darkColors : lightColors;
+}
+
+export function useThemeMode() {
+  return useContext(ThemeModeContext);
 }
 
 export const colors = lightColors;

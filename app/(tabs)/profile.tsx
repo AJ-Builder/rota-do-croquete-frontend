@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
-import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
+import { useColors, useThemeMode, fonts, radius, shadows, spacing, type ThemeMode } from "../../src/theme";
 
 interface Event {
   id: string;
@@ -26,8 +26,15 @@ interface Event {
   created_at: string;
 }
 
+const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: string }[] = [
+  { mode: "light", label: "Claro", icon: "sunny-outline" },
+  { mode: "system", label: "Auto", icon: "phone-portrait-outline" },
+  { mode: "dark", label: "Escuro", icon: "moon-outline" },
+];
+
 export default function ProfileScreen() {
   const colors = useColors();
+  const { mode: themeMode, setMode: setThemeMode } = useThemeMode();
   const { user, activeEvent, logout, setActiveEvent, refreshEvent } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
@@ -238,6 +245,46 @@ export default function ProfileScreen() {
       ...shadows.card,
     },
     newRouteBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 15, color: colors.primary },
+    themeCard: {
+      backgroundColor: colors.card,
+      borderRadius: radius.md,
+      padding: spacing.lg,
+      ...shadows.card,
+    },
+    themeTitle: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 13,
+      color: colors.textMuted,
+      letterSpacing: 0.5,
+      textTransform: "uppercase",
+      marginBottom: spacing.md,
+    },
+    themeRow: {
+      flexDirection: "row",
+      gap: spacing.sm,
+    },
+    themeBtn: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.xs,
+      paddingVertical: spacing.sm,
+      borderRadius: radius.sm,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    themeBtnActive: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    themeBtnText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 12,
+      color: colors.textSecondary,
+    },
+    themeBtnTextActive: { color: colors.white },
     logoutBtn: {
       flexDirection: "row",
       alignItems: "center",
@@ -354,6 +401,31 @@ export default function ProfileScreen() {
             <Ionicons name="add-circle-outline" size={20} color={colors.primary} />
             <Text style={s.newRouteBtnText}>Nova rota / entrar com código</Text>
           </Pressable>
+          <View style={s.themeCard}>
+            <Text style={s.themeTitle}>Aspecto</Text>
+            <View style={s.themeRow}>
+              {THEME_OPTIONS.map((opt) => {
+                const active = themeMode === opt.mode;
+                return (
+                  <Pressable
+                    key={opt.mode}
+                    style={[s.themeBtn, active && s.themeBtnActive]}
+                    onPress={() => setThemeMode(opt.mode)}
+                  >
+                    <Ionicons
+                      name={opt.icon as any}
+                      size={18}
+                      color={active ? colors.white : colors.textSecondary}
+                    />
+                    <Text style={[s.themeBtnText, active && s.themeBtnTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+
           <Pressable style={s.logoutBtn} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={18} color={colors.error} />
             <Text style={s.logoutText}>Sair da conta</Text>

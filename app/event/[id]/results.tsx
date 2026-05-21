@@ -162,6 +162,9 @@ export default function ResultsScreen() {
       color: colors.text,
       textAlign: "center",
     },
+    podiumNameFirst: {
+      color: "#2C1A0E",
+    },
     podiumScore: {
       fontFamily: fonts.display,
       fontSize: 20,
@@ -171,6 +174,9 @@ export default function ResultsScreen() {
       fontFamily: fonts.body,
       fontSize: 10,
       color: colors.textMuted,
+    },
+    podiumVotesFirst: {
+      color: "#8A6040",
     },
     restList: {
       gap: 6,
@@ -277,9 +283,9 @@ export default function ResultsScreen() {
               {top3.map((entry, idx) => (
                 <View key={entry.place_id} style={[s.podiumItem, idx === 0 && s.podiumFirst]}>
                   <Text style={s.podiumMedal}>{MEDALS[idx]}</Text>
-                  <Text style={s.podiumName} numberOfLines={2}>{entry.name}</Text>
+                  <Text style={[s.podiumName, idx === 0 && s.podiumNameFirst]} numberOfLines={2}>{entry.name}</Text>
                   <Text style={s.podiumScore}>{entry.global_score.toFixed(1)}</Text>
-                  <Text style={s.podiumVotes}>{entry.ratings_count} votos</Text>
+                  <Text style={[s.podiumVotes, idx === 0 && s.podiumVotesFirst]}>{entry.ratings_count} votos</Text>
                 </View>
               ))}
             </View>
