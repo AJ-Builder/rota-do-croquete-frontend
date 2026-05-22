@@ -187,7 +187,7 @@ export default function MapScreenWeb() {
 
       {places.length === 0 && (
         <View style={s.emptyBanner}>
-          <Text style={s.emptyText}>Usa a lupa para adicionar o primeiro sítio! 🧆</Text>
+          <Text style={s.emptyText}>Usa a lupa para adicionar o primeiro sítio! 🍻</Text>
         </View>
       )}
     </View>

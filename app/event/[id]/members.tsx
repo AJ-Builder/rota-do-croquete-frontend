@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -44,20 +43,14 @@ export default function MembersScreen() {
   }, [load]);
 
   function confirmRemove(p: Participant) {
-    if (Platform.OS === "web") {
-      if (window.confirm(`Remover ${p.username} da rota?`)) {
-        doRemove(p.id);
-      }
-    } else {
-      Alert.alert(
-        "Remover participante",
-        `Tens a certeza que queres remover ${p.username}?`,
-        [
-          { text: "Cancelar", style: "cancel" },
-          { text: "Remover", style: "destructive", onPress: () => doRemove(p.id) },
-        ]
-      );
-    }
+    Alert.alert(
+      "Remover participante",
+      `Tens a certeza que queres remover ${p.username}?`,
+      [
+        { text: "Cancelar", style: "cancel" },
+        { text: "Remover", style: "destructive", onPress: () => doRemove(p.id) },
+      ]
+    );
   }
 
   async function doRemove(userId: string) {

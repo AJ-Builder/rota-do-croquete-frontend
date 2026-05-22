@@ -6,6 +6,7 @@ interface User {
   id: string;
   username: string;
   created_at: string;
+  avatar_base64?: string;
 }
 
 interface Event {
@@ -27,6 +28,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   setActiveEvent: (event: Event | null) => Promise<void>;
   refreshEvent: () => Promise<void>;
+  updateProfile: (fields: { username?: string; avatar_base64?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -116,6 +118,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setActiveEventState(event);
   }
 
+  async function updateProfile(fields: { username?: string; avatar_base64?: string }) {
+    const updated = await api.patch<User>("/api/auth/me", fields);
+    setUser(updated);
+  }
+
   async function refreshEvent() {
     if (!activeEvent) return;
     try {
@@ -135,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         setActiveEvent,
         refreshEvent,
+        updateProfile,
       }}
     >
       {children}

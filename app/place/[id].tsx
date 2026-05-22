@@ -629,7 +629,7 @@ export default function PlaceDetail() {
         {/* Rating form */}
         <View style={s.card}>
           <Text style={s.cardTitle}>
-            {myRating?.sabor ? "✏️ A tua avaliação" : "🧆 Avaliar croquete"}
+            {myRating?.sabor ? "✏️ A tua avaliação" : "🍻 Avaliar croquete"}
           </Text>
 
           {PARAMS.map((p) => (
@@ -708,7 +708,7 @@ export default function PlaceDetail() {
               <ActivityIndicator color={colors.white} />
             ) : (
               <Text style={s.saveBtnText}>
-                {myRating?.sabor ? "Actualizar avaliação" : "Guardar avaliação"} 🧆
+                {myRating?.sabor ? "Actualizar avaliação" : "Guardar avaliação"} 🍻
               </Text>
             )}
           </Pressable>

@@ -78,7 +78,7 @@ export default function JoinScreen() {
 
   return (
     <View style={s.container}>
-      <Text style={s.emoji}>🧆</Text>
+      <Text style={s.emoji}>🍻</Text>
       {error ? (
         <>
           <Text style={s.title}>Oops!</Text>

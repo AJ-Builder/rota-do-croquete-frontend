@@ -219,7 +219,7 @@ export default function Onboarding() {
                 {loading ? (
                   <ActivityIndicator color={colors.white} />
                 ) : (
-                  <Text style={s.btnText}>Criar Rota 🧆</Text>
+                  <Text style={s.btnText}>Criar Rota 🍻</Text>
                 )}
               </Pressable>
             </>

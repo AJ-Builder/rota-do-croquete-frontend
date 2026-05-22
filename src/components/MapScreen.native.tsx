@@ -379,7 +379,7 @@ export default function MapScreen() {
 
       {places.length === 0 && !pending && (
         <View style={s.emptyBanner}>
-          <Text style={s.emptyText}>Toca no mapa para adicionar o primeiro sítio! 🧆</Text>
+          <Text style={s.emptyText}>Toca no mapa para adicionar o primeiro sítio! 🍻</Text>
         </View>
       )}
     </View>

@@ -6,6 +6,8 @@ import {
   Alert,
   Clipboard,
   FlatList,
+  Image,
+  Platform,
   Pressable,
   RefreshControl,
   StyleSheet,
@@ -35,13 +37,60 @@ const THEME_OPTIONS: { mode: ThemeMode; label: string; icon: string }[] = [
 export default function ProfileScreen() {
   const colors = useColors();
   const { mode: themeMode, setMode: setThemeMode } = useThemeMode();
-  const { user, activeEvent, logout, setActiveEvent, refreshEvent } = useAuth();
+  const { user, activeEvent, logout, setActiveEvent, refreshEvent, updateProfile } = useAuth();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [savingName, setSavingName] = useState(false);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [editUsername, setEditUsername] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  function pickAvatar() {
+    if (Platform.OS !== "web") return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.style.cssText = "position:fixed;top:-100px;opacity:0;";
+    document.body.appendChild(input);
+    input.onchange = async () => {
+      document.body.removeChild(input);
+      const file = input.files?.[0];
+      if (!file) return;
+      setUploadingAvatar(true);
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          await updateProfile({ avatar_base64: reader.result as string });
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        } catch (e: any) {
+          Alert.alert("Erro", e.message);
+        } finally {
+          setUploadingAvatar(false);
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  async function saveUsername() {
+    const name = editUsername.trim();
+    if (!name || name === user?.username) { setEditingUsername(false); return; }
+    setSavingUsername(true);
+    try {
+      await updateProfile({ username: name });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setEditingUsername(false);
+    } catch (e: any) {
+      Alert.alert("Erro", e.message);
+    } finally {
+      setSavingUsername(false);
+    }
+  }
 
   const loadEvents = useCallback(async () => {
     try {
@@ -122,6 +171,7 @@ export default function ProfileScreen() {
       gap: spacing.lg,
       ...shadows.card,
     },
+    avatarWrap: { position: "relative", width: 64, height: 64 },
     avatar: {
       width: 64,
       height: 64,
@@ -129,9 +179,51 @@ export default function ProfileScreen() {
       backgroundColor: colors.primary,
       alignItems: "center",
       justifyContent: "center",
+      overflow: "hidden",
+    },
+    avatarImg: { width: 64, height: 64, borderRadius: 32 },
+    avatarEdit: {
+      position: "absolute",
+      bottom: 0,
+      right: 0,
+      width: 22,
+      height: 22,
+      borderRadius: 11,
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
     },
     avatarText: { fontFamily: fonts.display, fontSize: 28, color: colors.white },
+    userInfo: { flex: 1 },
+    usernameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
     username: { fontFamily: fonts.display, fontSize: 22, color: colors.text },
+    usernameEditBtn: { padding: 2 },
+    usernameInput: {
+      fontFamily: fonts.display,
+      fontSize: 20,
+      color: colors.text,
+      borderBottomWidth: 2,
+      borderBottomColor: colors.primary,
+      paddingVertical: 2,
+      minWidth: 120,
+    },
+    usernameActions: { flexDirection: "row", gap: 6, marginTop: 4 },
+    usernameSave: {
+      backgroundColor: colors.primary,
+      borderRadius: radius.sm,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    usernameSaveText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.white },
+    usernameCancel: {
+      backgroundColor: colors.surfaceAlt,
+      borderRadius: radius.sm,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    usernameCancelText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textSecondary },
     since: { fontFamily: fonts.body, fontSize: 13, color: colors.textMuted, marginTop: 2 },
     activeCard: {
       backgroundColor: colors.card,
@@ -305,16 +397,50 @@ export default function ProfileScreen() {
       ListHeaderComponent={
         <>
           <View style={s.userCard}>
-            <View style={s.avatar}>
-              <Text style={s.avatarText}>
-                {user?.username?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-            <View>
-              <Text style={s.username}>{user?.username}</Text>
-              <Text style={s.since}>
-                Desde {user?.created_at?.split("T")[0] ?? ""}
-              </Text>
+            <Pressable style={s.avatarWrap} onPress={pickAvatar} disabled={uploadingAvatar}>
+              <View style={s.avatar}>
+                {user?.avatar_base64 ? (
+                  <Image source={{ uri: user.avatar_base64 }} style={s.avatarImg} />
+                ) : (
+                  <Text style={s.avatarText}>{user?.username?.charAt(0).toUpperCase()}</Text>
+                )}
+              </View>
+              <View style={s.avatarEdit}>
+                <Ionicons name="camera" size={12} color={colors.textSecondary} />
+              </View>
+            </Pressable>
+
+            <View style={s.userInfo}>
+              {editingUsername ? (
+                <>
+                  <TextInput
+                    style={s.usernameInput}
+                    value={editUsername}
+                    onChangeText={setEditUsername}
+                    autoFocus
+                    returnKeyType="done"
+                    onSubmitEditing={saveUsername}
+                    selectTextOnFocus
+                    maxLength={30}
+                  />
+                  <View style={s.usernameActions}>
+                    <Pressable style={s.usernameSave} onPress={saveUsername} disabled={savingUsername}>
+                      <Text style={s.usernameSaveText}>Guardar</Text>
+                    </Pressable>
+                    <Pressable style={s.usernameCancel} onPress={() => setEditingUsername(false)}>
+                      <Text style={s.usernameCancelText}>Cancelar</Text>
+                    </Pressable>
+                  </View>
+                </>
+              ) : (
+                <View style={s.usernameRow}>
+                  <Text style={s.username}>{user?.username}</Text>
+                  <Pressable style={s.usernameEditBtn} onPress={() => { setEditUsername(user?.username ?? ""); setEditingUsername(true); }}>
+                    <Ionicons name="pencil" size={14} color={colors.textMuted} />
+                  </Pressable>
+                </View>
+              )}
+              <Text style={s.since}>Desde {user?.created_at?.split("T")[0] ?? ""}</Text>
             </View>
           </View>
 

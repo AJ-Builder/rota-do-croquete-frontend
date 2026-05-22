@@ -92,12 +92,12 @@ export default function ResultsScreen() {
     if (Platform.OS === "web" && (navigator as any).share) {
       (navigator as any).share({
         title: `Resultados — ${event?.name}`,
-        text: "Os resultados da nossa rota do croquete 🧆",
+        text: "Os resultados da nossa rota do croquete 🍻",
         url,
       }).catch(() => {});
     } else {
       Clipboard.setString(url);
-      Alert.alert("Link copiado!", "Cola no WhatsApp para partilhar os resultados 🧆");
+      Alert.alert("Link copiado!", "Cola no WhatsApp para partilhar os resultados 🍻");
     }
   }
 
@@ -268,7 +268,7 @@ export default function ResultsScreen() {
           <Image source={{ uri: event.cover_photo_base64 }} style={s.coverPhoto} />
         ) : (
           <View style={s.coverGradient}>
-            <Text style={s.coverEmoji}>🧆</Text>
+            <Text style={s.coverEmoji}>🍻</Text>
           </View>
         )}
 
@@ -320,7 +320,7 @@ export default function ResultsScreen() {
           </Text>
 
           {/* Branding */}
-          <Text style={s.branding}>🧆 Rota do Croquete</Text>
+          <Text style={s.branding}>🍻 Rota do Croquete</Text>
         </View>
       </View>
 

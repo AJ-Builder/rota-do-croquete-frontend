@@ -35,7 +35,7 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: "Início",
-          headerTitle: "Rota do Croquete 🧆",
+          headerTitle: "Rota do Croquete 🍻",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
