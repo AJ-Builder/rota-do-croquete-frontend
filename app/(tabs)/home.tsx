@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
+import { compressToBase64 } from "../../src/lib/imageUtils";
 import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Event {
@@ -90,20 +91,17 @@ export default function HomeScreen() {
       const file = input.files?.[0];
       if (!file || !activeEvent) return;
       setUploadingCover(true);
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          const updated = await api.put<Event>(`/api/events/${activeEvent.id}/cover`, {
-            cover_photo_base64: reader.result as string,
-          });
-          await setActiveEvent(updated);
-        } catch (e: any) {
-          Alert.alert("Erro", e.message);
-        } finally {
-          setUploadingCover(false);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const base64 = await compressToBase64(file, 1200, 0.85);
+        const updated = await api.put<Event>(`/api/events/${activeEvent.id}/cover`, {
+          cover_photo_base64: base64,
+        });
+        await setActiveEvent(updated);
+      } catch (e: any) {
+        Alert.alert("Erro", e.message);
+      } finally {
+        setUploadingCover(false);
+      }
     };
     input.click();
   }

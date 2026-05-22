@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
+import { compressToBase64 } from "../../src/lib/imageUtils";
 import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
 
 interface Place {
@@ -136,14 +137,16 @@ export default function PlaceDetail() {
     input.type = "file";
     input.accept = "image/*";
     if (useCamera) (input as any).capture = "environment";
-    input.onchange = () => {
+    input.style.cssText = "position:fixed;top:-100px;opacity:0;";
+    document.body.appendChild(input);
+    input.onchange = async () => {
+      document.body.removeChild(input);
       const file = input.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) setPhoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const base64 = await compressToBase64(file, 1000, 0.85);
+        setPhoto(base64);
+      } catch {}
     };
     input.click();
   }

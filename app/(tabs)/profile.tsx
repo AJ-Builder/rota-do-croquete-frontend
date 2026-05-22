@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
+import { compressToBase64 } from "../../src/lib/imageUtils";
 import { useColors, useThemeMode, fonts, radius, shadows, spacing, type ThemeMode } from "../../src/theme";
 
 interface Event {
@@ -61,18 +62,15 @@ export default function ProfileScreen() {
       const file = input.files?.[0];
       if (!file) return;
       setUploadingAvatar(true);
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        try {
-          await updateProfile({ avatar_base64: reader.result as string });
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        } catch (e: any) {
-          Alert.alert("Erro", e.message);
-        } finally {
-          setUploadingAvatar(false);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const base64 = await compressToBase64(file, 350, 0.85);
+        await updateProfile({ avatar_base64: base64 });
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      } catch (e: any) {
+        Alert.alert("Erro", e.message);
+      } finally {
+        setUploadingAvatar(false);
+      }
     };
     input.click();
   }
