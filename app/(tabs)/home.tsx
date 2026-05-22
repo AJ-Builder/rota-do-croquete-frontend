@@ -447,7 +447,6 @@ export default function HomeScreen() {
                 </Pressable>
               </View>
 
-              )}
               </View>{/* end activeCardContent */}
             </View>
           ) : (
