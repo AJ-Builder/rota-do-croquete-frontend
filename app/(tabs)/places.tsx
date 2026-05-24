@@ -12,6 +12,7 @@ import {
   Text,
   View,
 } from "react-native";
+
 import { useAuth } from "../../src/ctx/AuthContext";
 import { api } from "../../src/lib/api";
 import { useColors, fonts, radius, shadows, spacing } from "../../src/theme";
@@ -33,6 +34,7 @@ export default function PlacesScreen() {
   const [places, setPlaces] = useState<Place[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const loadPlaces = useCallback(async () => {
     if (!activeEvent) return;
@@ -52,23 +54,15 @@ export default function PlacesScreen() {
     setRefreshing(false);
   }
 
-  async function deletePlace(id: string, name: string) {
-    Alert.alert("Remover local", `Remover "${name}" da rota?`, [
-      { text: "Cancelar", style: "cancel" },
-      {
-        text: "Remover",
-        style: "destructive",
-        onPress: async () => {
-          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-          try {
-            await api.delete(`/api/events/${activeEvent!.id}/places/${id}`);
-            await loadPlaces();
-          } catch (e: any) {
-            Alert.alert("Erro", e.message);
-          }
-        },
-      },
-    ]);
+  async function confirmDelete(id: string) {
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setConfirmDeleteId(null);
+    try {
+      await api.delete(`/api/events/${activeEvent!.id}/places/${id}`);
+      await loadPlaces();
+    } catch (e: any) {
+      Alert.alert("Erro", e.message);
+    }
   }
 
   async function moveUp(idx: number) {
@@ -196,6 +190,40 @@ export default function PlacesScreen() {
       padding: spacing.sm,
       marginLeft: 4,
     },
+    confirmRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      marginLeft: 4,
+    },
+    confirmText: {
+      fontFamily: fonts.body,
+      fontSize: 11,
+      color: colors.error,
+    },
+    confirmYes: {
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: radius.sm,
+      backgroundColor: colors.error,
+    },
+    confirmYesText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 11,
+      color: colors.white,
+    },
+    confirmNo: {
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      borderRadius: radius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    confirmNoText: {
+      fontFamily: fonts.bodySemiBold,
+      fontSize: 11,
+      color: colors.textSecondary,
+    },
     empty: { alignItems: "center", paddingVertical: spacing.xxxl },
     emptyEmoji: { fontSize: 48, marginBottom: spacing.md },
     emptyTitle: {
@@ -291,12 +319,27 @@ export default function PlacesScreen() {
                   <Ionicons name="chevron-down" size={18} color={index === places.length - 1 ? colors.textMuted : colors.primary} />
                 </Pressable>
               </View>
-              <Pressable
-                style={s.deleteBtn}
-                onPress={() => deletePlace(item.id, item.name)}
-              >
-                <Ionicons name="trash-outline" size={18} color={colors.error} />
-              </Pressable>
+              {confirmDeleteId === item.id ? (
+                <View style={s.confirmRow}>
+                  <Text style={s.confirmText}>Remover?</Text>
+                  <Pressable style={s.confirmYes} onPress={() => confirmDelete(item.id)}>
+                    <Text style={s.confirmYesText}>Sim</Text>
+                  </Pressable>
+                  <Pressable style={s.confirmNo} onPress={() => setConfirmDeleteId(null)}>
+                    <Text style={s.confirmNoText}>Não</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable
+                  style={s.deleteBtn}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setConfirmDeleteId(item.id);
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={18} color={colors.error} />
+                </Pressable>
+              )}
             </View>
           </View>
         )}
