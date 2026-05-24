@@ -10,7 +10,13 @@ services:
     headers:
       - path: /*
         name: Cache-Control
+        value: no-store, no-cache, max-age=0, must-revalidate
+      - path: /*
+        name: Pragma
         value: no-cache
+      - path: /*
+        name: Surrogate-Control
+        value: no-store
     routes:
       - type: rewrite
         source: /*
