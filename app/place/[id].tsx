@@ -96,6 +96,9 @@ export default function PlaceDetail() {
   const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const [sabor, setSabor] = useState(3);
   const [crocancia, setCrocancia] = useState(3);
@@ -204,6 +207,23 @@ export default function PlaceDetail() {
     }
   }
 
+  async function saveName() {
+    if (!nameInput.trim() || !place || !activeEvent) return;
+    setSavingName(true);
+    try {
+      const updated = await api.patch<Place>(
+        `/api/events/${activeEvent.id}/places/${id}`,
+        { name: nameInput.trim() }
+      );
+      setPlace(updated);
+      setEditingName(false);
+    } catch (e: any) {
+      Alert.alert("Erro", e.message);
+    } finally {
+      setSavingName(false);
+    }
+  }
+
   async function saveRating() {
     setSaving(true);
     try {
@@ -248,6 +268,34 @@ export default function PlaceDetail() {
       fontSize: 20,
       color: colors.text,
     },
+    placeNameRow: { flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" },
+    editNameInput: {
+      flex: 1,
+      fontFamily: fonts.display,
+      fontSize: 18,
+      color: colors.text,
+      borderBottomWidth: 1.5,
+      borderBottomColor: colors.primary,
+      paddingVertical: 2,
+      minWidth: 100,
+    },
+    editNameActions: { flexDirection: "row", gap: 6, marginTop: 4 },
+    editNameBtn: {
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: radius.sm,
+      backgroundColor: colors.primary,
+    },
+    editNameBtnText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.white },
+    editNameCancel: {
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: radius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    editNameCancelText: { fontFamily: fonts.bodySemiBold, fontSize: 13, color: colors.textSecondary },
+    editIcon: { opacity: 0.5 },
     placeAddress: {
       fontFamily: fonts.body,
       fontSize: 13,
@@ -567,7 +615,43 @@ export default function PlaceDetail() {
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </Pressable>
           <View style={s.headerInfo}>
-            <Text style={s.placeName}>{place.name}</Text>
+            {editingName ? (
+              <>
+                <TextInput
+                  style={s.editNameInput}
+                  value={nameInput}
+                  onChangeText={setNameInput}
+                  autoFocus
+                  returnKeyType="done"
+                  onSubmitEditing={saveName}
+                />
+                <View style={s.editNameActions}>
+                  <Pressable
+                    style={s.editNameBtn}
+                    onPress={saveName}
+                    disabled={savingName}
+                  >
+                    {savingName
+                      ? <ActivityIndicator size="small" color={colors.white} />
+                      : <Text style={s.editNameBtnText}>Guardar</Text>
+                    }
+                  </Pressable>
+                  <Pressable style={s.editNameCancel} onPress={() => setEditingName(false)}>
+                    <Text style={s.editNameCancelText}>Cancelar</Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <View style={s.placeNameRow}>
+                <Text style={s.placeName}>{place.name}</Text>
+                <Pressable
+                  style={s.editIcon}
+                  onPress={() => { setNameInput(place.name); setEditingName(true); }}
+                >
+                  <Ionicons name="pencil-outline" size={16} color={colors.text} />
+                </Pressable>
+              </View>
+            )}
             {place.address ? <Text style={s.placeAddress}>{place.address}</Text> : null}
             <Pressable
               style={s.mapsBtn}

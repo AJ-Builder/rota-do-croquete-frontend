@@ -2,7 +2,7 @@ services:
   - type: web
     name: rota-do-croquete-web
     env: static
-    buildCommand: npx expo export --platform web && echo "/* /index.html 200" > dist/_redirects && cp assets/icon.png dist/icon.png
+    buildCommand: npx expo export --platform web && find dist -mindepth 1 -maxdepth 1 ! -name "_expo" ! -name "index.html" ! -name "manifest.json" ! -name "favicon.ico" -exec rm -rf {} + && echo "/* /index.html 200" > dist/_redirects && cp assets/icon.png dist/icon.png
     staticPublishPath: dist
     envVars:
       - key: EXPO_PUBLIC_BACKEND_URL
