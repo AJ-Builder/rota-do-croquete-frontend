@@ -136,7 +136,7 @@ export default function MapScreenWeb() {
   const s = useMemo(() => StyleSheet.create({
     flex: { flex: 1 },
     center: { flex: 1, alignItems: "center", justifyContent: "center" },
-    fab: { position: "absolute", bottom: 24, right: 16, gap: 10 },
+    fab: { position: "absolute", bottom: 24, right: 16, gap: 10, zIndex: 1000 },
     fabBtn: {
       width: 56,
       height: 56,

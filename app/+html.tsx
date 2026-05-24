@@ -22,6 +22,12 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="apple-touch-icon" href="/icon.png" />
         <link rel="manifest" href="/manifest.json" />
         <ScrollViewStyleReset />
+        {/* Force fresh load when iOS Safari restores page from bfcache */}
+        <script dangerouslySetInnerHTML={{ __html: `
+          window.addEventListener('pageshow', function(e) {
+            if (e.persisted) { window.location.reload(); }
+          });
+        `}} />
       </head>
       <body style={{ backgroundColor: "#FFF9F2", margin: 0 }}>{children}</body>
     </html>

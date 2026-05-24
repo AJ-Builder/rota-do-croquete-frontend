@@ -260,11 +260,11 @@ export default function PlacesScreen() {
           </View>
         }
         renderItem={({ item, index }) => (
-          <Pressable
-            style={s.card}
-            onPress={() => router.push(`/place/${item.id}`)}
-          >
-            <View style={s.cardLeft}>
+          <View style={s.card}>
+            <Pressable
+              style={s.cardLeft}
+              onPress={() => router.push(`/place/${item.id}`)}
+            >
               <View style={s.badge}>
                 <Text style={s.badgeText}>{index + 1}</Text>
               </View>
@@ -273,7 +273,7 @@ export default function PlacesScreen() {
                 <Text style={s.address} numberOfLines={1}>{item.address}</Text>
                 <Text style={s.addedBy}>por {item.added_by_username}</Text>
               </View>
-            </View>
+            </Pressable>
             <View style={s.cardRight}>
               <View style={s.reorder}>
                 <Pressable
@@ -298,7 +298,7 @@ export default function PlacesScreen() {
                 <Ionicons name="trash-outline" size={18} color={colors.error} />
               </Pressable>
             </View>
-          </Pressable>
+          </View>
         )}
       />
 
